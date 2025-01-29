@@ -1,64 +1,104 @@
-from fastapi import FastAPI, Request, Cookie
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi.templating import Jinja2Templates
-from starlette.middleware.sessions import SessionMiddleware
+from fastapi import FastAPI, Request, HTTPException
+from fastapi.responses import RedirectResponse, JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
+from datetime import datetime
 import os
+import jwt
 
 from .api import endpoints
 from .db.database import Database
 
-app = FastAPI(title="ragchat")
+app = FastAPI(title="Doclink")
+
+# CORS Configuration
 app.add_middleware(
-    SessionMiddleware,
-    secret_key=os.getenv("MIDDLEWARE_SECRET_KEY"),
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
-app.router.timeout = 300
-app.include_router(endpoints.router, prefix="/api/v1", tags=["files"])
-app.mount("/static", StaticFiles(directory="static"), name="static")
-templates = Jinja2Templates(directory="templates")
 
 
-@app.get("/", response_class=HTMLResponse)
-async def landing(request: Request):
-    return templates.TemplateResponse("landing.html", {"request": request})
+@app.post("/api/validate-user")
+async def validate_user(request: Request):
+    """
+    Endpoint to validate and initialize user session
+    """
+    try:
+        # Parse the incoming request body
+        body = await request.json()
+
+        # Extract user information
+        user_id = body.get("user_id")
+        email = body.get("email")
+
+        # Validate the user in your database
+        with Database() as db:
+            # Check if user exists
+            user = db.get_user_by_id(user_id)
+
+            if not user:
+                # Optional: Create user if not exists
+                user = db.create_user({"user_id": user_id, "email": email})
+
+            # Generate a session token
+            session_token = generate_session_token(user)
+
+            return JSONResponse(
+                {
+                    "status": "success",
+                    "session_token": session_token,
+                    "redirect_url": "/chat/new",  # Or your default chat page
+                }
+            )
+
+    except Exception as e:
+        return HTTPException(status_code=400, detail=str(e))
 
 
-@app.get("/about", response_class=HTMLResponse)
-async def about(request: Request):
-    return templates.TemplateResponse("about.html", {"request": request})
+@app.get("/chat/{session_token}")
+async def chat_page(request: Request, session_token: str):
+    """
+    Validate session token and render chat
+    """
+    try:
+        # Validate session token
+        user = validate_session_token(session_token)
 
+        if not user:
+            return RedirectResponse(url="/")  # Redirect to login/home
 
-@app.get("/login", response_class=HTMLResponse)
-async def login_page(request: Request):
-    return templates.TemplateResponse("login.html", {"request": request})
-
-
-@app.get("/signup", response_class=HTMLResponse)
-async def signup_page(request: Request):
-    return templates.TemplateResponse("signup.html", {"request": request})
-
-
-@app.get("/chat/{session_id}")
-async def app_page(
-    request: Request, session_id: str, cookie_session: str = Cookie(None)
-):
-    effective_session = cookie_session or session_id
-    with Database() as db:
-        session_info = db.get_session_info(effective_session)
-    if not session_info:
-        return RedirectResponse(url="/login")
-    else:
+        # Render chat with user context
         return templates.TemplateResponse(
             "app.html",
-            {
-                "request": request,
-                "user_id": session_info["user_id"],
-                "session_id": effective_session,
-            },
+            {"request": request, "user_id": user["id"], "session_token": session_token},
         )
+    except Exception as e:
+        return RedirectResponse(url="/")
 
 
-@app.get("/api/version")
-async def get_version():
-    return {"version": "2.0.3"}
+def generate_session_token(user):
+    """
+    Generate a secure session token
+    """
+    payload = {
+        "user_id": user["id"],
+        "email": user["email"],
+        "exp": datetime.utcnow() + timedelta(days=1),
+    }
+    return jwt.encode(payload, os.getenv("JWT_SECRET"), algorithm="HS256")
+
+
+def validate_session_token(token):
+    """
+    Validate and decode session token
+    """
+    try:
+        payload = jwt.decode(token, os.getenv("JWT_SECRET"), algorithms=["HS256"])
+        # Additional validation with database can be added here
+        return payload
+    except jwt.ExpiredSignatureError:
+        return None
+    except jwt.InvalidTokenError:
+        return None

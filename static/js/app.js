@@ -803,7 +803,7 @@ class FileUploadModal extends Component {
                                         <span class="visually-hidden">Loading...</span>
                                     </div>
                                     <h5 class="mb-2">Uploading Files...</h5>
-                                    <p class="text-center mb-0">Please wait for ragchat to process your files</p>
+                                    <p class="text-center mb-0">Please wait for Doclink to process your files</p>
                                     <p class="text-center text-secondary">This might take a moment depending on file size</p>
                                 </div>
                             </div>
@@ -1397,7 +1397,7 @@ class Sidebar extends Component {
                 <div class="top-header py-3 px-4">
                     <div class="d-flex align-items-center justify-content-between">
                         <div class="d-flex align-items-center gap-3">
-                            <h1 class="logo-text m-0 d-xl-block">ragchat</h1>
+                            <h1 class="logo-text m-0 d-xl-block">Doclink</h1>
                         </div>
                     </div>
                 </div>
@@ -2067,7 +2067,7 @@ class RatingModal extends Component {
             <div class="modal-content">
                 <div class="domain-modal-wrapper">
                     <div class="modal-header border-0">
-                        <h5 class="modal-title">How would you rate ragchat?</h5>
+                        <h5 class="modal-title">How would you rate Doclink?</h5>
                         <button type="button" class="close-button" data-bs-dismiss="modal">
                             <i class="bi bi-x"></i>
                         </button>
@@ -2487,7 +2487,7 @@ class App {
         const isFirstTime = localStorage.getItem('firstTime') === '1';
         if (isFirstTime) {
             localStorage.setItem('firstTime', 0);
-            const firstTimeMsg = `[header]Welcome to ragchat${this.userData.user_info.user_name ? `, ${this.userData.user_info.user_name}` : ''}👋[/header]\nI've automatically set up your first domain with helpful guide about using ragchat. You can always use this file to get any information about ragchat!\n[header]To get started[/header]\n- Ask any question about ragchat's features and capabilities \n- Try asking "What can ragchat do?" or "How do I organize my documents?"\n- The user guide has been uploaded to your first domain\n- All answers will include source references\n\n[header]Quick Tips[/header]\n- Open & close navigation bar by hovering\n- Click ⚙️ to manage domains and documents\n- Upload files via "Upload Files" button after selecting a domain\n- Check right panel for answer sources\n- Supports PDF, DOCX, Excel, PowerPoint, UDF and TXT formats\n- Create different domains for different topics\n- View highlighted source sections in answers\n- Use file checkboxes to control search scope`;
+            const firstTimeMsg = `[header]Welcome to Doclink${this.userData.user_info.user_name ? `, ${this.userData.user_info.user_name}` : ''}👋[/header]\nI've automatically set up your first domain with helpful guide about using Doclink. You can always use this file to get any information about Doclink!\n[header]To get started[/header]\n- Ask any question about Doclink's features and capabilities \n- Try asking "What can Doclink do?" or "How do I organize my documents?"\n- The user guide has been uploaded to your first domain\n- All answers will include source references\n\n[header]Quick Tips[/header]\n- Open & close navigation bar by hovering\n- Click ⚙️ to manage domains and documents\n- Upload files via "Upload Files" button after selecting a domain\n- Check right panel for answer sources\n- Supports PDF, DOCX, Excel, PowerPoint, UDF and TXT formats\n- Create different domains for different topics\n- View highlighted source sections in answers\n- Use file checkboxes to control search scope`;
             this.chatManager.addMessage(firstTimeMsg, 'ai');
 
             const domains = this.domainManager.getAllDomains();
