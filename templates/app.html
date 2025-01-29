@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-HYM6103YPL"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-HYM6103YPL');
+    </script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ask me anything!</title>
+
+    <!-- Favicon -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon/favicon-16x16.png">
+    <link rel="manifest" href="/static/favicon/site.webmanifest">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../static/css/app.css">
+    <style>
+
+    </style>
+</head>
+
+<body class="text-white">
+    <div class="d-flex vh-100">
+        <!-- Sidebar -->
+        <div class="sidebar-container">
+            <div class="sidebar d-flex flex-column flex-shrink-0 h-100">
+                <!-- Sidebar Header -->
+                <div class="top-header py-3 px-4">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center gap-3">
+                            <!-- Menü butonu buradan silindi -->
+                            <h1 class="logo-text m-0 d-xl-block">ragchat</h1>
+                        </div>
+                    </div>
+                </div>
+                <!-- Sidebar Content -->
+                <div class="px-4 py-3">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-folder empty-folder"></i>
+                            <span class="d-xl-block selected-domain-text">Select Domain</span>
+                        </div>
+                        <i class="bi bi-gear settings-icon"></i>
+                    </div>
+
+                    <div class="file-list-container">
+                        <div id="sidebarFileList" class="sidebar-files">
+                        </div>
+
+                    </div>
+                    <div class="file-add">
+                        <button class="open-file-btn">
+                            Upload Files
+                        </button>
+                        <p class="helper-text">
+                            Select your domain first to upload files
+                        </p>
+                    </div>
+
+                </div>
+
+
+                <div class="bottom-section mt-auto">
+                    <div class="text-center mb-3">
+                        <span class="plan-badge d-xl-block">Free Plan</span>
+                    </div>
+                    <div class="user-section d-flex align-items-center gap-3 mb-3" role="button" id="userProfileMenu">
+                        <div class="user-avatar">İ</div>
+                        <div class="user-info d-xl-block">
+                            <div class="user-email">ibrahimyasing@gmail.com</div>
+                            <div class="user-status">Online</div>
+                        </div>
+                        <div class="user-menu">
+                            <div class="menu-item">
+                                <i class="bi bi-person-circle"></i>
+                                Profile
+                            </div>
+                            <div class="menu-item">
+                                <i class="bi bi-gear"></i>
+                                Settings
+                            </div>
+                            <div class="menu-divider"></div>
+                            <div class="menu-item logout-item">
+                                <i class="bi bi-box-arrow-right"></i>
+                                Logout
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bottom-links justify-content-center">
+                        <a href="#" class="premium-link">Go Premium!</a>
+                        <a href="#">Feedback</a>
+                    </div>
+                </div>
+            </div>
+            <div class="section-divider divider-after-sidebar"></div>
+        </div>
+
+        <!-- Main Chat Section -->
+        <div class="chat-container">
+            <div class="d-flex flex-column h-100">
+                <!-- Chat Header -->
+                <div class="top-header">
+                    <div class="d-flex align-items-center justify-content-center h-100 py-3">
+                        <button class="menu-trigger">
+                            <i class="bi bi-list"></i>
+                        </button>
+                        <h2 class="header-title m-0">Chat</h2>
+                        <!-- Resources butonu eklendi -->
+                        <button class="resources-trigger d-lg-none">
+                            <i class="bi bi-box-arrow-in-right"></i>
+                        </button>
+                    </div>
+                </div>
+                <!-- Chat Content -->
+                <div class="chat-content flex-grow-1 overflow-auto">
+                    <div class="chat-messages">
+
+                    </div>
+                </div>
+                <div class="bottom-message-section">
+                    <div class="message-container">
+                        <div class="sources-box" data-count="0">
+                            <span class="sources-number">0</span>
+                            <span class="sources-text">Sources</span>
+                        </div>
+                        <div class="message-input-container">
+                            <input type="text" class="message-input" placeholder="Find your answer..."
+                                aria-label="Message">
+                            <button class="send-button">
+                                <i class="bi bi-arrow-right send-icon"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resources Section -->
+        <div class="resources-container">
+            <div class="section-divider divider-before-resources"></div>
+            <div class="d-flex flex-column h-100">
+                <!-- Resources Header -->
+                <div class="top-header">
+                    <div class="d-flex align-items-center justify-content-center h-100 py-3">
+                        <h2 class="header-title m-0">Resources</h2>
+                    </div>
+                </div>
+                
+                <div class="resource-content flex-grow-1 overflow-auto px-4">
+                    <div class="resources-list">
+                        
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <div class="modal fade" id="domainSelectModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="domain-modal-wrapper">
+                    <div class="domain-header">
+                        <h5>Select Domain</h5>
+                        <button type="button" class="close-button" data-bs-dismiss="modal">
+                            <i class="bi bi-x"></i>
+                        </button>
+                    </div>
+
+                    <div class="domain-search">
+                        <i class="bi bi-search"></i>
+                        <input type="text" placeholder="Search domains..." class="domain-search-input"
+                            id="domainSearchInput">
+                    </div>
+
+                    <div class="domains-container" id="domainsContainer">
+                        <!-- Domains will be populated here -->
+                    </div>
+
+                    <button class="new-domain-button" id="newDomainBtn">
+                        <i class="bi bi-plus-circle"></i>
+                        Create New Domain
+                    </button>
+
+                    <button class="select-button">
+                        Select Domain
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content">
+                <div class="domain-modal-wrapper text-center">
+                    <h6 class="mb-3">Delete Domain?</h6>
+                    <p class="text-secondary mb-4">Are you sure you want to delete this domain?</p>
+                    <div class="d-flex gap-3">
+                        <button class="btn btn-outline-secondary flex-grow-1" data-bs-dismiss="modal">Cancel</button>
+                        <button class="btn btn-danger flex-grow-1" id="confirmDeleteBtn">Delete</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Template for new domain input -->
+    <template id="newDomainInputTemplate">
+        <div class="domain-card new-domain-input-card">
+            <input type="text" class="new-domain-input" placeholder="Enter domain name" autofocus>
+            <div class="new-domain-actions">
+                <button class="confirm-button"><i class="bi bi-check"></i></button>
+                <button class="cancel-button"><i class="bi bi-x"></i></button>
+            </div>
+        </div>
+    </template>
+    <div class="modal fade" id="fileUploadModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="domain-modal-wrapper">
+                    <div class="modal-header border-0 d-flex align-items-center">
+                        <div>
+                            <h6 class="mb-0">Selected Domain: <span class="domain-name text-primary-green text-truncate"></span></h6>
+                        </div>
+                        <button type="button" class="close-button" data-bs-dismiss="modal">
+                            <i class="bi bi-x"></i>
+                        </button>
+                    </div>
+
+                    <div class="upload-container">
+                        <div id="fileList" class="file-list mb-3"></div>
+
+                        <div class="upload-area" id="dropZone">
+                            <div class="upload-content text-center">
+                                <div class="upload-icon-wrapper">
+                                    <div class="upload-icon">
+                                        <i class="bi bi-cloud-upload text-primary-green"></i>
+                                    </div>
+                                </div>
+                                <h5 class="mb-2">Upload Files</h5>
+                                <p class="mb-3">Drag & drop or <span class="text-primary-green choose-text">choose files</span> to upload</p>
+                                <small class="text-secondary">Supported file types: PDF, DOCX and TXT</small>
+                                <input type="file" id="fileInput" multiple accept=".pdf,.docx,.txt" class="d-none">
+                            </div>
+                        </div>
+
+                        <button class="upload-btn mt-3" id="uploadBtn" disabled>
+                            Upload
+                            <div class="upload-progress">
+                                <div class="progress-bar"></div>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="alert-modal" id="premiumAlert">
+        <div class="alert-content">
+            <div class="alert-icon">
+                <i class="bi bi-gem text-primary-green"></i>
+            </div>
+            <h5 class="alert-title">No Premium Plan Yet!</h5>
+            <p class="alert-message">We don't have a premium plan yet. You can you ragchat for free! Just don't forget to send us your feedbacks!</p>
+            <button class="alert-button">Got it!</button>
+        </div>
+    </div>
+    <!-- Feedback Modal -->
+    <div id="feedback-modal" class="feedback-modal">
+        <div class="feedback-modal-content">
+            <div class="feedback-modal-header">
+                <h3>Send Feedback</h3>
+                <button class="close-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="feedback-modal-description">
+                <p>Your feedback really helps us get better!</p>
+                <p>Please follow these steps:</p>
+                <ol>
+                    <li>Select the type of your feedback</li>
+                    <li>Add your description</li>
+                    <li>If it helps explain better, attach a screenshot</li>
+                </ol>
+            </div>
+            <div class="feedback-modal-body">
+                <form id="feedback-form" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label for="feedback-type">Type</label>
+                        <select 
+                            id="feedback-type" 
+                            name="feedback_type"
+                            class="form-control"
+                        >
+                            <option value="general">General Feedback</option>
+                            <option value="bug">Bug Report</option>
+                            <option value="feature">Feature Request</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="feedback-description">Description</label>
+                        <textarea 
+                            id="feedback-description"
+                            name="feedback_description"
+                            class="form-control" 
+                            rows="4" 
+                            placeholder="Please describe your feedback or issue..."
+                        ></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="feedback-screenshot">Screenshot (Optional)</label>
+                        <input 
+                            type="file" 
+                            id="feedback-screenshot"
+                            name="feedback_screenshot"
+                            class="form-control" 
+                            accept="image/*"
+                        >
+                        <small class="form-text">Max size: 2MB</small>
+                    </div>
+                    <div class="feedback-modal-footer">
+                        <button type="button" class="btn-cancel close-modal">Cancel</button>
+                        <button type="submit" class="btn-submit">Submit Feedback</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div id="feedbackSuccessAlert" class="alert-modal">
+        <div class="alert-content">
+            <div class="alert-icon">
+                <i class="bi bi-check-circle text-primary-green"></i>
+            </div>
+            <h5 class="alert-title">Thank You!</h5>
+            <p class="alert-message">Your feedback has been successfully submitted. We appreciate your help in making ragchat better!</p>
+            <button class="alert-button">Got it!</button>
+        </div>
+    </div>
+
+    <div id="logoutConfirmModal" class="alert-modal">
+        <div class="alert-content">
+            <div class="alert-icon">
+                <i class="bi bi-box-arrow-right text-primary-green"></i>
+            </div>
+            <h5 class="alert-title">Log out of ragchat?</h5>
+            <p class="alert-message">You can always log back in at any time.</p>
+            <div class="d-flex flex-column gap-2 w-100">
+                <button class="alert-button">Log out</button>
+                <button class="btn-cancel">Cancel</button>
+            </div>
+        </div>
+    </div>
+    <!-- Pop-up Rating Modal -->
+    <div class="modal fade" id="ratingModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="domain-modal-wrapper">
+                    <div class="modal-header border-0">
+                        <h5 class="modal-title">How would you rate ragchat?</h5>
+                        <button type="button" class="close-button" data-bs-dismiss="modal">
+                            <i class="bi bi-x"></i>
+                        </button>
+                    </div>
+                    <div class="modal-body text-center">
+                        <div class="stars-container">
+                            <div class="stars">
+                                <i class="bi bi-star" data-rating="1"></i>
+                                <i class="bi bi-star" data-rating="2"></i>
+                                <i class="bi bi-star" data-rating="3"></i>
+                                <i class="bi bi-star" data-rating="4"></i>
+                                <i class="bi bi-star" data-rating="5"></i>
+                            </div>
+                        </div>
+                        <div class="feedback-container">
+                            <textarea class="feedback-input" placeholder="Share your thoughts..."></textarea>
+                        </div>
+                        <div class="text-center">
+                            <button class="submit-button">Submit</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Server data-->
+    <script>
+        window.serverData = {
+            userId: "{{ user_id }}",
+            sessionId: "{{ session_id }}"
+        };</script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/js/app-api.js"></script>
+    <script src="../static/js/app.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,636 @@
+prompts:
+  languages:
+    en:
+      general_purpose:
+        - id: gp_001
+          text: "
+            Your task is to analyze the given context windows, extract relevant data based on the user's query, and use file information to enhance your response. Your primary goal is to provide a comprehensive, structured, and user-friendly answer using solely the information provided in the context window.\n
+            Please respond in the language of the user's query, specified by the {lang} variable (e.g., 'en' for English, 'tr' for Turkish), ensuring the tone and style align with the query's language and context.\n
+
+            Instructions:\n
+            You will be provided with context windows, each containing several sentences along with the two following metadata: \n
+            File: Specifies source of each context.\n
+            Confidence coefficient: A number between 0 and 1, indicating the priority of the context (higher numbers mean higher priority).\n
+
+            Extracting Relevant Information:\n
+            Carefully analyze the user's query to determine the specific information being requested.\n
+            Use all relevant context windows, prioritizing those with higher confidence levels for accuracy.\n
+            If the query references a specific file, extract information only from the specified file(s).\n
+            If the query does not specify a file, aggregate information from all available files.\n
+            If the context contains consistent information across multiple files, consolidate the data and indicate consistency.\n
+            If the context contains contradictory information: Highlight the contradictions, specify their sources, and explain how they differ.\n
+            If the context contains similar or different information, summarize the distinctions or similarities and relate them to the query.\n
+            Present your response using bullet points or topic-based sections for better readability.\n
+            Prioritize clarity and conciseness. Use subheadings or categories for complex queries.\n
+            If the required information is not found in the context, state this clearly and offer suggestions or clarifications if possible.\n
+            Do not specify the confidence coefficient in response.\n
+            Do not mention about the 'context windows'. 'Use according to resources' instead.\n
+
+            Respond *strictly* in the following format:\n
+
+            [header]Section Name[/header]\n
+            Content with [bold]bold terms[/bold] when needed. Use the following list format for any points:\n
+            - Main point\n
+            - Sub-point\n
+                - Further nested point\n
+
+            [header]Another Section Name[/header]\n
+            Content with [bold]bold terms[/bold] when needed\n
+            - Main point\n
+            - Sub-point\n
+                - Further nested point\n
+
+            Rules:\n
+            1. Each major section must start with [header]...[/header]\n
+            2. Use [bold]...[/bold] for important terms or emphasis within content\n
+            3. Headers should be one of: Definition, Purpose, Key Features, Operation, Context\n
+            4. Use single dash (-) for all list items\n
+            5. Indent nested list items with exactly 2 spaces per level\n
+            6. Place one empty line between major sections\n
+            7. Do not use any other list markers (bullets, dots, numbers)\n
+            8. Keep indentation consistent throughout the response\n                       
+                                   
+            Context Windows:\n
+            {context}\n
+
+            User Query:\n
+            {query}\n
+
+            User Query language:\n
+            {lang}\n
+            "
+
+      Informational:
+        - id: info_001
+          text: "
+            Your task is to analyze the given context windows, extract relevant data based on the user's query, and use file information to enhance your response. Your primary goal is to provide a comprehensive, structured, and user-friendly answer using solely the information provided in the context window.\n
+            Please respond in the language of the user's query, specified by the {lang} variable (e.g., 'en' for English, 'tr' for Turkish), ensuring the tone and style align with the query's language and context.\n
+
+            Instructions:\n
+            You will be provided with context windows, each containing several sentences along with the two following metadata:\n
+            File: Specifies source of each context.\n 
+            Confidence coefficient: A number between 0 and 1, indicating the priority of the context (higher numbers mean higher priority).\n
+
+            1. Identify factual knowledge, definitions, or explanations requested in the query.\n
+            2. Focus on delivering concise, clear, and specific information.\n
+            3. Include [b]key terms[/b] and definitions for clarity and emphasize relevant details.\n
+            4. Avoid generalizations; prioritize extracting exact matches or relevant information from the context.\n
+            5. Answer must be short as possible, on-point and clear as much as possible.\n
+            6. Always prioritize contexts with higher confidence coefficients for accuracy, but cross-check lower-confidence contexts for supplementary or missing details to ensure completeness.\n
+            7. Where appropriate, attribute information to its source file or section implicitly. For example: 'As described in the regulations...' or 'According to the provided report...' without directly mentioning the context window or file name unless explicitly required by the query.\n
+            8. If contradictory information is found: Explicitly state the contradiction and its source(s). Suggest possible resolutions, clarifications, or factors that may explain the discrepancy (e.g., differing data sources, updates, or interpretations).\n
+            9. If the query requests a more detailed response, expand your answer with additional explanations\n
+
+            Extracting Relevant Information:\n
+            Carefully analyze the user's query to determine the specific information being requested.\n
+            Use all relevant context windows, prioritizing those with higher confidence levels for accuracy.\n
+            If the query references a specific file, extract information only from the specified file(s).\n
+            If the query does not specify a file, aggregate information from all available files.\n
+            If the context contains consistent information across multiple files, consolidate the data and indicate consistency.\n
+            If the context contains contradictory information: Highlight the contradictions, specify their sources, and explain how they differ.\n
+            If the context contains similar or different information, summarize the distinctions or similarities and relate them to the query.\n
+            Present your response using bullet points or topic-based sections for better readability.\n
+            Prioritize clarity and conciseness. Use subheadings or categories for complex queries.\n
+            If the required information is not found in the context, state this clearly and offer suggestions or clarifications if possible.\n
+            Do not specify the confidence coefficient in response.\n
+            Do not mention about the 'context windows'. 'Use according to resources' instead.\n
+
+            Respond *strictly* in the following format:\n
+
+            [header]Section Name[/header]\n
+            Content with [bold]bold terms[/bold] when needed. Use the following list format for any points:\n
+            - Main point\n
+            - Sub-point\n
+                - Further nested point\n
+
+            [header]Another Section Name[/header]\n
+            Content with [bold]bold terms[/bold] when needed\n
+            - Main point\n
+            - Sub-point\n
+                - Further nested point\n
+
+            Rules:\n
+            1. Each major section must start with [header]...[/header]\n
+            2. Use [bold]...[/bold] for important terms or emphasis within content\n
+            3. Headers should be one of: Definition, Purpose, Key Features, Operation, Context\n
+            4. Use single dash (-) for all list items\n
+            5. Indent nested list items with exactly 2 spaces per level\n
+            6. Place one empty line between major sections\n
+            7. Do not use any other list markers (bullets, dots, numbers)\n
+            8. Keep indentation consistent throughout the response   \n                      
+                                   
+            Context Windows:\n
+            {context}\n
+
+            User Query:\n
+            {query}\n
+
+            User Query language:\n
+            {lang}\n
+            "
+
+      Comparison:
+        - id: comp_001
+          text: "
+            Your task is to analyze the given context windows, extract relevant data based on the user's query, and use file information to enhance your response. Your primary goal is to provide a comprehensive, structured, and user-friendly answer using solely the information provided in the context window.\n
+            Please respond in the language of the user's query, specified by the {lang} variable (e.g., 'en' for English, 'tr' for Turkish), ensuring the tone and style align with the query's language.\n
+
+            Instructions:\n
+            You will be provided with context windows, each containing several sentences along with the two following metadata:\n
+            File: Specifies source of each context.\n
+            Confidence coefficient: A number between 0 and 1, indicating the priority of the context (higher numbers mean higher priority).\n
+
+            1. Extract and compare relevant details from the context to highlight similarities and differences.\n
+            2. If contradictory information is found, specify the contradictions and explain their sources.\n
+            3. Present distinctions or parallels in a structured format, using headers like [header]Similarities[/header] and [header]Differences[/header].\n
+            4. Provide a clear explanation of how the extracted information relates to the user's query.\n
+            5. If consistent information appears across contexts, summarize it in the [header]Similarities[/header] section. For contradictory information: Specify conflicting points under [header]Differences[/header]. Attribute contradictions to their respective sources and explain their impact.\n
+            6. For comparisons involving multiple attributes, organize data using a [bold]tabular format[/bold] or structured lists. Each row or bullet point should represent one attribute.\n
+            7. If the required comparison data is missing, clearly state this under [header]Missing Information[/header]. Offer suggestions for refining the query or point out gaps in the context.\n
+            8. For queries involving detailed or hierarchical comparisons: Use a primary section for high-level differences or similarities. Include nested sections for more granular points.\n
+
+            Extracting Relevant Information:\n
+            Carefully analyze the user's query to determine the specific information being requested.\n
+            Use all relevant context windows, prioritizing those with higher confidence levels for accuracy.\n
+            If the query references a specific file, extract information only from the specified file(s).\n
+            If the query does not specify a file, aggregate information from all available files.\n
+            If the context contains consistent information across multiple files, consolidate the data and indicate consistency.\n
+            If the context contains contradictory information: Highlight the contradictions, specify their sources, and explain how they differ.\n
+            If the context contains similar or different information, summarize the distinctions or similarities and relate them to the query.\n
+            Present your response using bullet points or topic-based sections for better readability.\n
+            Prioritize clarity and conciseness. Use subheadings or categories for complex queries.\n
+            If the required information is not found in the context, state this clearly and offer suggestions or clarifications if possible.\n
+            Do not specify the confidence coefficient in response.\n
+            Do not mention about the 'context windows'. 'Use according to resources' instead.\n
+
+            Respond *strictly* in the following format:\n
+
+            [header]Section Name[/header]\n
+            Content with [bold]bold terms[/bold] when needed. Use the following list format for any points:\n
+            - Main point\n
+            - Sub-point\n
+                - Further nested point\n
+
+            [header]Another Section Name[/header]\n
+            Content with [bold]bold terms[/bold] when needed\n
+            - Main point\n
+            - Sub-point\n
+                - Further nested point\n
+
+            Rules:\n
+            1. Each major section must start with [header]...[/header]\n
+            2. Use [bold]...[/bold] for important terms or emphasis within content\n
+            3. Headers should be one of: Definition, Purpose, Key Features, Operation, Context\n
+            4. Use single dash (-) for all list items\n
+            5. Indent nested list items with exactly 2 spaces per level\n
+            6. Place one empty line between major sections\n
+            7. Do not use any other list markers (bullets, dots, numbers)\n
+            8. Keep indentation consistent throughout the response\n                     
+                                   
+            Context Windows:\n
+            {context}\n
+
+            User Query:\n
+            {query}\n
+
+            User Query language:\n
+            {lang}\n
+            "
+
+      Summarization:
+        - id: sum_001
+          text: "
+            Your task is to analyze the given context windows, extract relevant data based on the user's query, and use file information to enhance your response. Your primary goal is to provide a comprehensive, structured, and user-friendly answer using solely the information provided in the context window.\n
+            Please respond in the language of the user's query, specified by the {lang} variable (e.g., 'en' for English, 'tr' for Turkish), ensuring the tone and style align with the query's language.\n
+
+            Instructions:\n
+            You will be provided with context windows, each containing several sentences along with the two following metadata:\n
+            File: Specifies source of each context.\n
+            Confidence coefficient: A number between 0 and 1, indicating the priority of the context (higher numbers mean higher priority).\n
+
+            1. Identify and extract key points or main ideas from the context relevant to the query.\n
+            2. Create a concise and well-structured summary, using bullet points or categories for clarity.\n
+            3. Highlight overarching themes and provide an overview without including excessive details.\n
+            4. Consolidate consistent information across contexts to avoid redundancy.\n
+            5. If the query specifies a focus area (e.g., a section, file, or theme), prioritize summarizing content strictly relevant to that focus. Where no focus is specified, highlight the most critical and recurring themes or points.\n
+            6. Where appropriate, illustrate key ideas with short examples or specific details from the context. Keep examples concise and relevant.\n
+            7. If the context contains contradictions: Summarize both perspectives succinctly. Highlight the contradiction explicitly, and explain how it relates to the query.\n
+            8. The summary should not exceed 200 tokens unless explicitly requested by the query. If required details exceed this limit, provide a prioritized or hierarchical overview.\n
+
+            Extracting Relevant Information:\n
+            Carefully analyze the user's query to determine the specific information being requested.\n
+            Use all relevant context windows, prioritizing those with higher confidence levels for accuracy.\n
+            If the query references a specific file, extract information only from the specified file(s).\n
+            If the query does not specify a file, aggregate information from all available files.\n
+            If the context contains consistent information across multiple files, consolidate the data and indicate consistency.\n
+            If the context contains contradictory information: Highlight the contradictions, specify their sources, and explain how they differ.\n
+            If the context contains similar or different information, summarize the distinctions or similarities and relate them to the query.\n
+            Present your response using bullet points or topic-based sections for better readability.\n
+            Prioritize clarity and conciseness. Use subheadings or categories for complex queries.\n
+            If the required information is not found in the context, state this clearly and offer suggestions or clarifications if possible.\n
+            Do not specify the confidence coefficient in response.\n
+            Do not mention about the 'context windows'. 'Use according to resources' instead.\n
+
+            Respond *strictly* in the following format:\n
+
+            [header]Section Name[/header]\n
+            Content with [bold]bold terms[/bold] when needed. Use the following list format for any points:\n
+            - Main point\n
+            - Sub-point\n
+                - Further nested point\n
+
+            [header]Another Section Name[/header]\n
+            Content with [bold]bold terms[/bold] when needed\n
+            - Main point\n
+            - Sub-point\n
+                - Further nested point\n
+
+            Rules:\n
+            1. Each major section must start with [header]...[/header]\n
+            2. Use [bold]...[/bold] for important terms or emphasis within content\n
+            3. Headers should be one of: Definition, Purpose, Key Features, Operation, Context\n
+            4. Use single dash (-) for all list items\n
+            5. Indent nested list items with exactly 2 spaces per level\n
+            6. Place one empty line between major sections\n
+            7. Do not use any other list markers (bullets, dots, numbers)\n
+            8. Keep indentation consistent throughout the response\n                
+                                   
+            Context Windows:\n
+            {context}\n
+
+            User Query:\n
+            {query}\n
+
+            User Query language:\n
+            {lang}\n
+            "
+
+      queries:
+        - id: query_001
+          text: "
+            Task: Analyze, Correct, and Generate Related Questions & Answers\n
+            Instructions:\n
+            You are given a user query.\n
+
+            First, check the user question. If it has no meaning, return an empty string. If it is meaningful, do the following:\n
+            Correct any spelling or grammatical errors and return the corrected question as the first line of the output.\n
+            Generate 3 semantically similar queries that retain the same meaning as the corrected query.\n
+            Create 3 different questions that approach the original query from different angles but stay related.\n
+            Answer last 3 questions with concise responses, 1-2 sentences max each.\n
+            Then, analyze the corrected user query and determine its intent, intention list is and their keywords, examples are given below. If intent can't be determined return empty '' string.\n
+            Please respond in the file language, specified by the {file lang} variable (e.g., 'en' for English, 'tr' for Turkish) regardless of user query's language , ensuring the tone and style align with the file's language.\n
+            If file language is diferent than english look for the intention keywords that provided for intent detection below in file language.\n
+
+            The possible intents are:\n
+            1. Informational: Seeking factual knowledge, definitions, or explanations.\n
+                Intention Keywords: What, define, explain, details, specify, who, why, how.\n
+                Intention Examples: What is the penalty for breaking this rule? → Informational\n
+            2. Summarization: Requesting a concise overview of complex information.\n
+                Intention Keywords: Summarize, overview, main points, key ideas, brief, concise, simplify.\n
+                Intention Examples: Can you summarize the key points of this document? → Summarization\n
+            3. Comparison: Evaluating options, methods, or technologies.\n
+                Intention Keywords: Compare, difference, similarity, versus, contrast, better, alternative, pros and cons.\n
+                Intention Examples: Compare the benefits of these two methods. → Comparison\n
+
+            Return the output **strictly** in the following format:\n
+            [corrected query]\n
+            [first semantically similar query]\n
+            [second semantically similar query]\n
+            [third semantically similar query]\n
+            [first different-angle question]\n
+            [second different-angle question]\n
+            [third different-angle question]\n
+            [first different-angle answer]\n
+            [second different-angle answer]\n
+            [third different-angle answer]\n
+            [user intention]\n
+
+            User query: {query}\n
+
+            File language:\n
+            {file_lang}\n
+
+            Example:\n
+            User query: How does retrieval-augmented generation work in AI systems?\n
+
+            File language: en\n
+
+            Output:
+            How does retrieval-augmented generation work in AI systems?\n
+            What is the process of retrieval-augmented generation in AI?\n
+            How does RAG help AI systems retrieve and generate information?\n
+            Can you explain how retrieval-augmented generation functions in AI applications?\n
+            What are the key advantages of using RAG in AI?\n
+            How does RAG differ from traditional machine learning models?\n
+            What challenges does RAG face in implementation?\n
+            RAG enhances AI by providing more accurate responses by retrieving relevant external data.\n
+            Unlike traditional models, RAG integrates search capabilities to access external knowledge during inference.\n
+            Major challenges include latency in retrieval, ensuring relevance of fetched data, and maintaining up-to-date information.\n
+            Informational\n
+            "
+    tr:
+      general_purpose:
+        - id: gp_tr_001
+          text: "
+            Göreviniz verilen bağlam pencerelerini analiz etmek, kullanıcının sorgusuna göre ilgili verileri çıkarmak ve yanıtınızı geliştirmek için dosya bilgilerini kullanmaktır. Birincil amacınız, yalnızca bağlam penceresinde sağlanan bilgileri kullanarak kapsamlı, yapılandırılmış ve kullanıcı dostu bir yanıt sunmaktır.\n
+
+            Talimatlar:\n
+            Size, her biri birkaç cümle ve şu iki meta veriyi içeren bağlam pencereleri sağlanacaktır:\n
+            Dosya: Her bağlamın kaynağını belirtir.\n
+            Güven katsayısı: 0 ile 1 arasında bir sayı olup, bağlamın öncelik seviyesini ifade eder (daha yüksek sayılar daha yüksek öncelik anlamına gelir).\n
+            
+            İlgili Bilgilerin Çıkarılması:\n
+            Kullanıcının sorgusunda istenen belirli bilgileri belirlemek için dikkatlice analiz yapın.\n
+            Doğruluk için daha yüksek güven seviyelerine sahip bağlamlara öncelik vererek tüm ilgili bağlam pencerelerini kullanın.\n
+            Sorgu belirli bir dosyayı referans alıyorsa, yalnızca belirtilen dosya(lar)dan bilgi çıkarın.\n
+            Sorgu herhangi bir dosya belirtmiyorsa, mevcut tüm dosyalardan bilgileri birleştirin.\n
+            Bağlam birden fazla dosyada tutarlı bilgiler içeriyorsa, verileri birleştirin ve tutarlılığı belirtin.\n   
+            Bağlam çelişkili bilgiler içeriyorsa: Çelişkileri vurgulayın, kaynaklarını belirtin ve nasıl farklılık gösterdiklerini açıklayın.\n
+            Bağlam benzer veya farklı bilgiler içeriyorsa, farklılıkları veya benzerlikleri özetleyin ve bunları sorguyla ilişkilendirin.\n
+            Yanıtınızı daha iyi okunabilirlik için madde işaretleri veya konuya dayalı bölümler kullanarak sunun.\n
+            Netlik ve özlülüğe öncelik verin. Karmaşık sorgular için alt başlıklar veya kategoriler kullanın.\n
+            Gerekli bilgi bağlamda bulunmuyorsa, bunu açıkça belirtin ve mümkünse öneriler veya açıklamalar sunun.\n
+            Yanıtta güven katsayısını belirtmeyin.\n
+                                   
+            Aşağıdaki formata *kesinlikle* uygun şekilde yanıt verin:\n
+
+            [header]Bölüm Adı[/header]\n
+            Gerektiğinde [bold]kalın terimler[/bold] ile içerik. Maddeler için şu format kullanılmalı:\n
+            - Ana madde\n
+              - Alt madde\n
+                - Daha alt madde\n
+
+            [header]Diğer Bölüm Adı[/header]\n
+            Gerektiğinde [bold]kalın terimler[/bold] ile içerik\n
+            - Ana madde\n
+              - Alt madde\n
+                - Daha alt madde\n
+
+            Kurallar:\n
+            1. Her ana bölüm [header]...[/header] ile başlamalı\n
+            2. Önemli terimler veya vurgulamalar için [bold]...[/bold] kullanın\n
+            3. Bölüm başlıkları şunlardan biri olmalı: Tanım, Amaç, Temel Özellikler, İşleyiş, Bağlam\n
+            4. Tüm liste maddeleri için tek tire (-) kullanın\n
+            5. Alt maddelerde tam olarak 2 boşluk ile girintileme yapın\n
+            6. Ana bölümler arasında bir boş satır bırakın\n
+            7. Başka liste işaretleri kullanmayın (nokta, sayı vb.)\n
+            8. Yanıt boyunca tutarlı girintileme kullanın\n
+
+            Bağlam Pencereleri:\n
+            {context}\n
+
+            Kullanıcı Sorgusu:\n
+            {query}\n
+            "
+
+      Bilgi Edinme:
+        - id: info_tr_001
+          text: "
+            Göreviniz verilen bağlam pencerelerini analiz etmek, kullanıcının sorgusuna göre ilgili verileri çıkarmak ve yanıtınızı geliştirmek için dosya bilgilerini kullanmaktır. Birincil amacınız, yalnızca bağlam penceresinde sağlanan bilgileri kullanarak kapsamlı, yapılandırılmış ve kullanıcı dostu bir yanıt sunmaktır.\n
+
+            Talimatlar:\n
+            Size, her biri birkaç cümle ve şu iki meta veriyi içeren bağlam pencereleri sağlanacaktır:\n
+            Dosya: Her bağlamın kaynağını belirtir.\n
+            Güven katsayısı: 0 ile 1 arasında bir sayı olup, bağlamın öncelik seviyesini ifade eder (daha yüksek sayılar daha yüksek öncelik anlamına gelir).\n
+                                   
+            1. Sorguda talep edilen gerçek bilgilere, tanımlara veya açıklamalara odaklanın.\n
+            2. Kısa, net ve spesifik bilgiler sunmaya odaklanın.\n
+            3. Açıklık için [b]önemli terimler[/b] ve tanımları ekleyin ve ilgili ayrıntıları vurgulayın.\n
+            4. Genellemelerden kaçının; bağlamdan tam eşleşmeleri veya ilgili bilgileri çıkarmayı önceliklendirin.\n
+            5. Cevap mümkün olduğunca kısa, net ve doğrudan olmalı; 150 ile 200 token arasında olmalıdır.\n
+            6. Doğruluk için her zaman daha yüksek güven katsayısına sahip bağlamlara öncelik verin, ancak eksiksizliği sağlamak için ek veya eksik ayrıntılar için daha düşük güven katsayısına sahip bağlamları çapraz kontrol edin.\n
+            7. Uygun olduğunda, bilgiyi kaynak dosya veya bölüme dolaylı olarak atfedin. Örneğin: Yönetmeliklerde belirtildiği gibi... veya Sağlanan rapora göre... ifadelerini kullanın, ancak sorguda açıkça istenmediği sürece bağlam penceresi veya dosya adını doğrudan belirtmeyin.\n
+            8. Çelişkili bilgiler bulunursa: Çelişkiyi ve kaynağını açıkça belirtin. Olası çözüm yollarını, açıklamaları veya farklılıkları açıklayabilecek faktörleri (örneğin, farklı veri kaynakları, güncellemeler veya yorumlar) önerin.\n
+            
+            İlgili Bilgilerin Çıkarılması:\n
+            Kullanıcının sorgusunda istenen belirli bilgileri belirlemek için dikkatlice analiz yapın.\n
+            Doğruluk için daha yüksek güven seviyelerine sahip bağlamlara öncelik vererek tüm ilgili bağlam pencerelerini kullanın.\n
+            Sorgu belirli bir dosyayı referans alıyorsa, yalnızca belirtilen dosya(lar)dan bilgi çıkarın.\n
+            Sorgu herhangi bir dosya belirtmiyorsa, mevcut tüm dosyalardan bilgileri birleştirin.\n
+            Bağlam birden fazla dosyada tutarlı bilgiler içeriyorsa, verileri birleştirin ve tutarlılığı belirtin.\n
+            Bağlam çelişkili bilgiler içeriyorsa: Çelişkileri vurgulayın, kaynaklarını belirtin ve nasıl farklılık gösterdiklerini açıklayın.\n
+            Bağlam benzer veya farklı bilgiler içeriyorsa, farklılıkları veya benzerlikleri özetleyin ve bunları sorguyla ilişkilendirin.\n
+            Yanıtınızı daha iyi okunabilirlik için madde işaretleri veya konuya dayalı bölümler kullanarak sunun.\n
+            Netlik ve özlülüğe öncelik verin. Karmaşık sorgular için alt başlıklar veya kategoriler kullanın.\n
+            Gerekli bilgi bağlamda bulunmuyorsa, bunu açıkça belirtin ve mümkünse öneriler veya açıklamalar sunun.\n
+            Yanıtta güven katsayısını belirtmeyin.\n
+                                   
+            Aşağıdaki formata *kesinlikle* uygun şekilde yanıt verin:\n
+
+            [header]Bölüm Adı[/header]\n
+            Gerektiğinde [bold]kalın terimler[/bold] ile içerik. Maddeler için şu format kullanılmalı:\n
+            - Ana madde\n
+              - Alt madde\n
+                - Daha alt madde\n
+
+            [header]Diğer Bölüm Adı[/header]\n
+            Gerektiğinde [bold]kalın terimler[/bold] ile içerik\n
+            - Ana madde\n
+              - Alt madde\n
+                - Daha alt madde\n
+
+            Kurallar:\n
+            1. Her ana bölüm [header]...[/header] ile başlamalı\n
+            2. Önemli terimler veya vurgulamalar için [bold]...[/bold] kullanın\n
+            3. Bölüm başlıkları şunlardan biri olmalı: Tanım, Amaç, Temel Özellikler, İşleyiş, Bağlam\n
+            4. Tüm liste maddeleri için tek tire (-) kullanın\n
+            5. Alt maddelerde tam olarak 2 boşluk ile girintileme yapın\n
+            6. Ana bölümler arasında bir boş satır bırakın\n
+            7. Başka liste işaretleri kullanmayın (nokta, sayı vb.)\n
+            8. Yanıt boyunca tutarlı girintileme kullanın\n
+
+            Bağlam Pencereleri:\n
+            {context}\n
+
+            Kullanıcı Sorgusu:\n
+            {query}\n
+            "
+
+      Karşılaştırma:
+        - id: comp_tr_001
+          text: "
+            Göreviniz verilen bağlam pencerelerini analiz etmek, kullanıcının sorgusuna göre ilgili verileri çıkarmak ve yanıtınızı geliştirmek için dosya bilgilerini kullanmaktır. Birincil amacınız, yalnızca bağlam penceresinde sağlanan bilgileri kullanarak kapsamlı, yapılandırılmış ve kullanıcı dostu bir yanıt sunmaktır.\n
+
+            Talimatlar:\n
+            Size, her biri birkaç cümle ve şu iki meta veriyi içeren bağlam pencereleri sağlanacaktır:\n
+            Dosya: Her bağlamın kaynağını belirtir.\n
+            Güven katsayısı: 0 ile 1 arasında bir sayı olup, bağlamın öncelik seviyesini ifade eder (daha yüksek sayılar daha yüksek öncelik anlamına gelir).\n
+                                   
+            1. Benzerlikleri ve farklılıkları vurgulamak için bağlamdan ilgili detayları çıkarın ve karşılaştırın.\n
+            2. Çelişkili bilgiler bulunursa, bu çelişkileri belirtin ve kaynaklarını açıklayın.\n
+            3. Ayrımları veya paralellikleri, [header]Benzerlikler[/header] ve [header]Farklılıklar[/header] gibi başlıklar kullanarak yapılandırılmış bir formatta sunun.\n
+            4. Çıkarılan bilgilerin kullanıcının sorgusuyla nasıl ilişkili olduğunu net bir şekilde açıklayın.\n
+            5. Eğer bağlamlar arasında tutarlı bilgiler bulunuyorsa, bunları [header]Benzerlikler[/header] bölümünde özetleyin. Çelişkili bilgiler için: Çelişen noktaları [header]Farklılıklar[/header] başlığı altında belirtin. Çelişkileri ilgili kaynaklarına atfedin ve bunların etkisini açıklayın.\n
+            6. Birden fazla özelliği kapsayan karşılaştırmalar için, verileri [bold]tablo formatında[/bold] veya yapılandırılmış listeler halinde düzenleyin. Her bir satır veya madde işareti bir özelliği temsil etmelidir.\n
+            7. Gerekli karşılaştırma verileri eksikse, bunu [header]Eksik Bilgiler[/header] başlığı altında açıkça belirtin. Sorgunun nasıl iyileştirilebileceğine dair önerilerde bulunun veya bağlamdaki eksikliklere işaret edin.\n
+            8. Ayrıntılı veya hiyerarşik karşılaştırmaları içeren sorgular için: Genel farklılıklar veya benzerlikler için bir ana bölüm kullanın. Daha ayrıntılı noktalar için iç içe geçmiş bölümler ekleyin.\n
+            
+            İlgili Bilgilerin Çıkarılması:\n
+            Kullanıcının sorgusunda istenen belirli bilgileri belirlemek için dikkatlice analiz yapın.\n
+            Doğruluk için daha yüksek güven seviyelerine sahip bağlamlara öncelik vererek tüm ilgili bağlam pencerelerini kullanın.\n
+            Sorgu belirli bir dosyayı referans alıyorsa, yalnızca belirtilen dosya(lar)dan bilgi çıkarın.\n
+            Sorgu herhangi bir dosya belirtmiyorsa, mevcut tüm dosyalardan bilgileri birleştirin.\n
+            Bağlam birden fazla dosyada tutarlı bilgiler içeriyorsa, verileri birleştirin ve tutarlılığı belirtin.\n    
+            Bağlam çelişkili bilgiler içeriyorsa: Çelişkileri vurgulayın, kaynaklarını belirtin ve nasıl farklılık gösterdiklerini açıklayın.\n
+            Bağlam benzer veya farklı bilgiler içeriyorsa, farklılıkları veya benzerlikleri özetleyin ve bunları sorguyla ilişkilendirin.\n
+            Yanıtınızı daha iyi okunabilirlik için madde işaretleri veya konuya dayalı bölümler kullanarak sunun.\n
+            Netlik ve özlülüğe öncelik verin. Karmaşık sorgular için alt başlıklar veya kategoriler kullanın.\n
+            Gerekli bilgi bağlamda bulunmuyorsa, bunu açıkça belirtin ve mümkünse öneriler veya açıklamalar sunun.\n
+            Yanıtta güven katsayısını belirtmeyin.\n
+                                   
+            Aşağıdaki formata *kesinlikle* uygun şekilde yanıt verin:\n
+
+            [header]Bölüm Adı[/header]\n
+            Gerektiğinde [bold]kalın terimler[/bold] ile içerik. Maddeler için şu format kullanılmalı:\n
+            - Ana madde\n
+              - Alt madde\n
+                - Daha alt madde\n
+
+            [header]Diğer Bölüm Adı[/header]\n
+            Gerektiğinde [bold]kalın terimler[/bold] ile içerik\n
+            - Ana madde\n
+              - Alt madde\n
+                - Daha alt madde\n
+
+            Kurallar:\n
+            1. Her ana bölüm [header]...[/header] ile başlamalı\n
+            2. Önemli terimler veya vurgulamalar için [bold]...[/bold] kullanın\n
+            3. Bölüm başlıkları şunlardan biri olmalı: Tanım, Amaç, Temel Özellikler, İşleyiş, Bağlam\n
+            4. Tüm liste maddeleri için tek tire (-) kullanın\n
+            5. Alt maddelerde tam olarak 2 boşluk ile girintileme yapın\n
+            6. Ana bölümler arasında bir boş satır bırakın\n
+            7. Başka liste işaretleri kullanmayın (nokta, sayı vb.)\n
+            8. Yanıt boyunca tutarlı girintileme kullanın\n
+
+            Bağlam Pencereleri:\n
+            {context}\n
+
+            Kullanıcı Sorgusu:\n
+            {query}\n
+            "
+
+      Özetleme:
+        - id: sum_tr_001
+          text: "
+            Göreviniz verilen bağlam pencerelerini analiz etmek, kullanıcının sorgusuna göre ilgili verileri çıkarmak ve yanıtınızı geliştirmek için dosya bilgilerini kullanmaktır. Birincil amacınız, yalnızca bağlam penceresinde sağlanan bilgileri kullanarak kapsamlı, yapılandırılmış ve kullanıcı dostu bir yanıt sunmaktır.\n
+
+            Talimatlar:\n
+            Size, her biri birkaç cümle ve şu iki meta veriyi içeren bağlam pencereleri sağlanacaktır:\n
+            Dosya: Her bağlamın kaynağını belirtir.\n
+            Güven katsayısı: 0 ile 1 arasında bir sayı olup, bağlamın öncelik seviyesini ifade eder (daha yüksek sayılar daha yüksek öncelik anlamına gelir).\n
+                                   
+            1. Sorgu ile ilgili bağlamdan anahtar noktaları veya temel fikirleri belirleyin ve çıkarın.\n
+            2. Netlik için madde işaretleri veya kategoriler kullanarak kısa ve iyi yapılandırılmış bir özet oluşturun.\n
+            3. Genel temaları vurgulayın ve gereksiz ayrıntılara yer vermeden genel bir bakış sağlayın.\n
+            4. Tekrarlamaları önlemek için bağlamlar arasındaki tutarlı bilgileri birleştirin.\n
+            5. Eğer sorgu belirli bir odak alanı (örneğin, bir bölüm, dosya veya tema) belirtiyorsa, yalnızca bu odakla ilgili içeriği özetlemeye öncelik verin. Herhangi bir odak belirtilmemişse, en kritik ve tekrar eden temaları veya noktaları vurgulayın.\n
+            6. Uygun olduğunda, bağlamdan kısa örnekler veya belirli detaylarla ana fikirleri açıklayın. Örnekleri kısa ve ilgili tutun.\n
+            7. Bağlamda çelişkiler varsa: Her iki bakış açısını da kısaca özetleyin. Çelişkiyi açıkça belirtin ve bunun sorguyla nasıl ilişkili olduğunu açıklayın.\n
+            8. Özet, sorgu tarafından açıkça talep edilmedikçe 200 kelimeyi aşmamalıdır. Eğer gerekli detaylar bu sınırı aşarsa, öncelikli veya hiyerarşik bir genel bakış sağlayın.\n
+            
+            İlgili Bilgilerin Çıkarılması:\n
+            Kullanıcının sorgusunda istenen belirli bilgileri belirlemek için dikkatlice analiz yapın.\n
+            Doğruluk için daha yüksek güven seviyelerine sahip bağlamlara öncelik vererek tüm ilgili bağlam pencerelerini kullanın.\n
+            Sorgu belirli bir dosyayı referans alıyorsa, yalnızca belirtilen dosya(lar)dan bilgi çıkarın.\n
+            Sorgu herhangi bir dosya belirtmiyorsa, mevcut tüm dosyalardan bilgileri birleştirin.\n
+            Bağlam birden fazla dosyada tutarlı bilgiler içeriyorsa, verileri birleştirin ve tutarlılığı belirtin.\n   
+            Bağlam çelişkili bilgiler içeriyorsa: Çelişkileri vurgulayın, kaynaklarını belirtin ve nasıl farklılık gösterdiklerini açıklayın.\n
+            Bağlam benzer veya farklı bilgiler içeriyorsa, farklılıkları veya benzerlikleri özetleyin ve bunları sorguyla ilişkilendirin.\n
+            Yanıtınızı daha iyi okunabilirlik için madde işaretleri veya konuya dayalı bölümler kullanarak sunun.\n
+            Netlik ve özlülüğe öncelik verin. Karmaşık sorgular için alt başlıklar veya kategoriler kullanın.\n
+            Gerekli bilgi bağlamda bulunmuyorsa, bunu açıkça belirtin ve mümkünse öneriler veya açıklamalar sunun.\n
+            Yanıtta güven katsayısını belirtmeyin.\n
+                                   
+            Aşağıdaki formata *kesinlikle* uygun şekilde yanıt verin:\n
+
+            [header]Bölüm Adı[/header]\n
+            Gerektiğinde [bold]kalın terimler[/bold] ile içerik. Maddeler için şu format kullanılmalı:\n
+            - Ana madde\n
+              - Alt madde\n
+                - Daha alt madde\n
+
+            [header]Diğer Bölüm Adı[/header]\n
+            Gerektiğinde [bold]kalın terimler[/bold] ile içerik\n
+            - Ana madde\n
+              - Alt madde\n
+                - Daha alt madde\n
+
+            Kurallar:\n
+            1. Her ana bölüm [header]...[/header] ile başlamalı\n
+            2. Önemli terimler veya vurgulamalar için [bold]...[/bold] kullanın\n
+            3. Bölüm başlıkları şunlardan biri olmalı: Tanım, Amaç, Temel Özellikler, İşleyiş, Bağlam\n
+            4. Tüm liste maddeleri için tek tire (-) kullanın\n
+            5. Alt maddelerde tam olarak 2 boşluk ile girintileme yapın\n
+            6. Ana bölümler arasında bir boş satır bırakın\n
+            7. Başka liste işaretleri kullanmayın (nokta, sayı vb.)\n
+            8. Yanıt boyunca tutarlı girintileme kullanın\n
+
+            Bağlam Pencereleri:\n
+            {context}\n
+
+            Kullanıcı Sorgusu:\n
+            {query}\n
+            "
+
+      queries:
+        - id: query_tr_001
+          text: "
+            Görev: Analiz Et, Düzelt ve İlgili Sorular & Cevaplar Oluştur.\n
+
+            Talimatlar:\n
+            Kullanıcı sorgusu size verilmiştir.\n
+            Öncelikle Kullanıcı sorusunu kontrol edin. Eğer anlamsızsa, boş bir string '' döndürün. Anlamlıysa, şu işlemleri yapın:\n
+            Herhangi bir yazım veya dilbilgisi hatası olup olmadığını kontrol edin ve düzeltilmiş soruyu çıktıdaki ilk soru olarak döndürün.\n
+            Ardından, Düzeltmiş soruyla aynı anlamı koruyan 3 semantik olarak benzer sorgu oluşturun.\n
+            Orijinal soruyu farklı açılardan ele alan, ancak yine de ilgili kalan 3 farklı soru oluşturun.\n
+            Son 3 soruya, her biri 1-2 cümlelik kısa cevaplarla yanıt verin.\n
+            Ardından düzeltilmiş kullanıcı sorgusunu analiz edin ve niyetini belirleyin.  Niyet listesi, anahtar kelimeler ve örnekler aşağıda verilmiştir. Eğer niyet tam olarak anlaşılmaz ise boş bir string '' döndür.\n
+                                   
+            Olası niyetler:\n
+            1. Bilgi Edinme: Gerçek bilgileri, tanımları veya açıklamaları öğrenme talebi.\n
+                Niyet Anahtar Kelimeleri: Ne, tanımla, açıkla, detaylar, belirt, kim, neden, nasıl.\n
+                Niyet Örnekleri: Bu kuralı ihlal etmenin cezası nedir? → Bilgilendirme\n
+            2. Özetleme: Karmaşık bilgilerin kısa bir özetini isteme.\n
+                Niyet Anahtar Kelimeleri: Özetle, genel bakış, ana noktalar, temel fikirler, kısa, öz, basitleştir.\n
+                Niyet Örnekleri: Bu belgenin ana noktalarını özetleyebilir misiniz? → Özetleme\n
+            3. Karşılaştırma: Seçenekleri, yöntemleri veya teknolojileri değerlendirme.\n
+                Niyet Anahtar Kelimeleri: Karşılaştır, fark, benzerlik, karşılaştırma, daha iyi, alternatif, artılar ve eksiler.\n
+                Niyet Örnekleri: Bu iki yöntemin faydalarını karşılaştırın. → Karşılaştırma\n
+                                   
+            Çıktıyı **kesinlikle** şu formatta döndürün:\n
+            [düzeltilmiş sorgu]\n
+            [birinci semantik olarak benzer sorgu]\n  
+            [ikinci semantik olarak benzer sorgu]\n
+            [üçüncü semantik olarak benzer sorgu]\n
+            [birinci farklı-açıdan soru]\n
+            [ikinci farklı-açıdan soru]\n
+            [üçüncü farklı-açıdan soru]\n
+            [birinci farklı-açıdan cevap]\n
+            [ikinci farklı-açıdan cevap]\n
+            [üçüncü farklı-açıdan cevap]\n
+            [kullanıcı niyeti]\n   
+                                   
+            Kullanıcı Sorgusu: {query}\n
+
+            Örnek:\n
+            Kullanıcı sorgusu: Retrieval-augmented generation yapay zeka sistemlerinde nasıl çalışır?\n
+
+            Çıktı:\n
+            Retrieval-augmented generation yapay zeka sistemlerinde nasıl çalışır?\n
+            Retrieval-augmented generation süreci yapay zekada nasıl işler?\n
+            RAG, yapay zeka sistemlerine bilgi getirme ve oluşturma konusunda nasıl yardımcı olur?\n
+            Retrieval-augmented generation yapay zeka uygulamalarında nasıl işlev görür?\n
+            RAG kullanmanın yapay zeka için temel avantajları nelerdir?\n
+            RAG, geleneksel makine öğrenimi modellerinden nasıl farklıdır?\n
+            RAG’in uygulanmasında karşılaşılan zorluklar nelerdir?\n
+            RAG, yapay zekayı dış verileri getirerek daha doğru yanıtlar sağlamada geliştirir.\n
+            RAG, geleneksel modellerden farklı olarak çıkarım sırasında harici bilgilere erişim sağlar.\n
+            Başlıca zorluklar arasında getirme gecikmesi, getirilen verilerin uygunluğu ve bilgilerin güncel tutulması yer alır.\n
+            Bilgi Edinme\n
+            
+            Kullanıcı sorusu: {query}\n
+            "
+
+metadata:
+  version: "1.0"
+  description: "Prompt type storages with language groups"
