@@ -2011,14 +2011,23 @@ class LogoutModal extends Component {
         const element = document.getElementById('logoutConfirmModal');
         super(element);
         this.setupEventListeners();
+        
+        // Set URLs based on environment from serverData
+        this.WEB_URL = window.serverData.environment === 'dev' 
+            ? 'http://localhost:3000'
+            : 'https://doclink.io';
+            
+        this.APP_URL = window.serverData.environment === 'dev'
+            ? 'http://localhost:8000'
+            : 'https://doclink.io';
     }
 
     setupEventListeners() {
         const logoutButton = this.element.querySelector('.alert-button');
         const cancelButton = this.element.querySelector('.btn-cancel');
 
-        logoutButton?.addEventListener('click', () => {
-            this.handleLogout();
+        logoutButton?.addEventListener('click', async () => {
+            await this.handleLogout();
         });
 
         cancelButton?.addEventListener('click', () => {
@@ -2026,12 +2035,96 @@ class LogoutModal extends Component {
         });
     }
 
-    handleLogout() {
-        // Clear any stored session data
-        localStorage.removeItem('sessionId');
+    async handleLogout() {
+        try {
+            // 1. Clear all client-side storage
+            this.clearClientStorage();
+
+            // 2. Reset app state
+            this.resetAppState();
+
+            // 3. Clear server session
+            await this.clearServerSession();
+
+            // 4. Redirect to landing page with session termination
+            window.location.href = `${this.WEB_URL}/api/auth/signout?callbackUrl=/`;
+
+        } catch (error) {
+            console.error('Logout error:', error);
+            // Fallback to basic redirect if something fails
+            window.location.href = this.WEB_URL;
+        }
+    }
+
+    clearClientStorage() {
+        // Clear all local storage
+        localStorage.clear();
         
-        // Redirect to landing page
-        window.location.href = '/';
+        // Clear all session storage
+        sessionStorage.clear();
+        
+        // Clear all cookies
+        const paths = ['/', '/api'];
+        
+        paths.forEach(path => {
+            document.cookie = `session=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=${path};`;
+            document.cookie = `next-auth.session-token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=${path};`;
+            
+            if (window.serverData.environment !== 'dev') {
+                document.cookie = `__Secure-next-auth.session-token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=${path}; secure`;
+            }
+        });
+    }
+
+    resetAppState() {
+        if (window.app) {
+            // Reset domain manager
+            if (window.app.domainManager) {
+                window.app.domainManager.clearSelection();
+                window.app.domainManager.domains.clear();
+            }
+
+            // Reset sidebar
+            if (window.app.sidebar) {
+                window.app.sidebar.clearFileSelections();
+                window.app.sidebar.updateFileList([], []);
+                window.app.sidebar.updateDomainSelection(null);
+            }
+
+            // Reset chat
+            if (window.app.chatManager) {
+                window.app.chatManager.disableChat();
+                window.app.chatManager.messageContainer.innerHTML = '';
+            }
+
+            // Reset user data
+            window.app.userData = null;
+            window.app.updateSourcesCount(0);
+        }
+
+        // Clear global variables but keep environment
+        const environment = window.serverData.environment;
+        window.serverData = { environment };
+    }
+
+    async clearServerSession() {
+        try {
+            if (window.serverData?.sessionId) {
+                await fetch(`${this.APP_URL}/api/v1/auth/logout`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        sessionId: window.serverData.sessionId,
+                        userId: window.serverData.userId
+                    })
+                });
+            }
+        } catch (error) {
+            console.error('Error clearing server session:', error);
+            // Continue with logout even if this fails
+        }
     }
 
     show() {

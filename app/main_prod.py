@@ -161,6 +161,7 @@ async def chat_page(request: Request, session_id: str):
                     "session_id": session_id,
                     "user_id": user_data["user_id"],
                     "is_first_time": request.state.is_new_user,
+                    "environment": "prod",
                 },
             )
 
@@ -186,6 +187,7 @@ async def chat_page(request: Request, session_id: str):
                     "session_id": session_id,
                     "user_id": user_data["user_id"],
                     "is_first_time": False,
+                    "environment": "prod",
                 },
             )
 
