@@ -551,8 +551,7 @@ class Database:
         """
         try:
             self.cursor.execute(query, (user_id, session_id))
-            question_count = self.cursor.fetchone()[0]
-            return question_count
+            return
         except Exception as e:
             self.conn.rollback()
             raise e
