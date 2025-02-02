@@ -119,19 +119,33 @@ async def auth_middleware(request: Request, call_next):
             return RedirectResponse(url=FRONTEND_URL)
 
         try:
+            # If we have both token and session, prioritize session
+            if session_cookie:
+                try:
+                    user_data = verify_session_token(session_cookie)
+                    request.state.user_data = user_data
+                    return await call_next(request)
+                except Exception as e:
+                    logger.info(f"Error validation of session cookie {e}")
+                    if not token:
+                        return RedirectResponse(url=FRONTEND_URL)
+
+            # Token-based auth as fallback
             if token:
-                # Store token info in request state for the endpoint to use
+                logger.info("Using token authentication")
                 request.state.token = token
                 request.state.user_id = request.query_params.get("userId")
                 request.state.is_new_user = (
                     request.query_params.get("isNewUser", "false").lower() == "true"
                 )
-            else:
-                # Verify session cookie
-                user_data = verify_session_token(session_cookie)
-                request.state.user_data = user_data
+                return await call_next(request)
+
+            # No valid auth method
+            logger.info("No valid authentication method found")
+            return RedirectResponse(url=FRONTEND_URL)
+
         except Exception as e:
-            logger.info(f"Auth error: {str(e)}")
+            logger.info(f"Auth middleware error: {str(e)}", exc_info=True)
             return RedirectResponse(url=FRONTEND_URL)
 
     return await call_next(request)
