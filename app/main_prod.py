@@ -140,6 +140,7 @@ async def auth_middleware(request: Request, call_next):
 @app.get("/chat/{session_id}")
 async def chat_page(request: Request, session_id: str):
     """Handle both initial and subsequent visits to chat page"""
+    logger.info(f"******** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} ********")
     try:
         logger.info(f"Processing chat page request for session {session_id}")
         logger.info(f"Request state: {vars(request.state)}")
