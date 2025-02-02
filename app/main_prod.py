@@ -8,6 +8,8 @@ import requests as http_requests
 import os
 import jwt
 import uuid
+import logging
+from logging.handlers import RotatingFileHandler
 
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
@@ -21,6 +23,22 @@ load_dotenv()
 FRONTEND_URL = os.getenv("FRONTEND_URL_PROD", "http://localhost:3000")
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 SECRET_KEY = os.getenv("MIDDLEWARE_SECRET_KEY")
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[
+        RotatingFileHandler(
+            "/var/log/doclink/doclink.log",
+            maxBytes=10000000,  # 10MB
+            backupCount=5,
+        ),
+        logging.StreamHandler(),
+    ],
+)
+
+logger = logging.getLogger(__name__)
 
 # App initialization
 app = FastAPI(title="Doclink")
@@ -57,7 +75,7 @@ async def verify_google_token(token: str) -> dict:
 
         return userinfo
     except Exception as e:
-        print(f"Token verification error: {str(e)}")
+        logger.info(f"Token verification error: {str(e)}")
         raise HTTPException(status_code=401, detail=f"Invalid token: {str(e)}")
 
 
@@ -113,7 +131,7 @@ async def auth_middleware(request: Request, call_next):
                 user_data = verify_session_token(session_cookie)
                 request.state.user_data = user_data
         except Exception as e:
-            print(f"Auth error: {str(e)}")
+            logger.info(f"Auth error: {str(e)}")
             return RedirectResponse(url=FRONTEND_URL)
 
     return await call_next(request)
@@ -123,18 +141,29 @@ async def auth_middleware(request: Request, call_next):
 async def chat_page(request: Request, session_id: str):
     """Handle both initial and subsequent visits to chat page"""
     try:
+        logger.info(f"Processing chat page request for session {session_id}")
+        logger.info(f"Request state: {vars(request.state)}")
+
         # If we have a token in query params, this is an initial visit
         if hasattr(request.state, "token"):
+            logger.info("Processing initial visit with token")
             # Verify Google token and get user info
-            google_user = await verify_google_token(request.state.token)
+            try:
+                # Verify Google token and get user info
+                google_user = await verify_google_token(request.state.token)
+                logger.info(f"Google user verified: {google_user.get('email')}")
 
-            # Create user data
-            user_data = {
-                "user_id": request.state.user_id,
-                "email": google_user.get("email"),
-                "name": google_user.get("name"),
-                "picture": google_user.get("picture"),
-            }
+                # Create user data
+                user_data = {
+                    "user_id": request.state.user_id,
+                    "email": google_user.get("email"),
+                    "name": google_user.get("name"),
+                    "picture": google_user.get("picture"),
+                }
+
+            except Exception as e:
+                logger.error(f"Error processing token: {str(e)}", exc_info=True)
+                raise
 
             # Create session token
             session_token = create_session_token(user_data)
@@ -179,6 +208,8 @@ async def chat_page(request: Request, session_id: str):
 
         # If we have user_data from cookie, this is a subsequent visit
         else:
+            logger.info("Processing subsequent visit with session cookie")
+
             user_data = request.state.user_data
             return templates.TemplateResponse(
                 "app.html",
@@ -192,7 +223,7 @@ async def chat_page(request: Request, session_id: str):
             )
 
     except Exception as e:
-        print(f"Error in chat page: {str(e)}")
+        logger.info("Processing subsequent visit with session cookie")
         raise HTTPException(status_code=500, detail="Error rendering application")
 
 
