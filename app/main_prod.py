@@ -43,6 +43,8 @@ logger = logging.getLogger(__name__)
 
 # App initialization
 app = FastAPI(title="Doclink")
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
+templates = Jinja2Templates(directory="templates")
 
 
 # Middleware headers
@@ -84,10 +86,6 @@ app.add_middleware(
     allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
-
-# Static files
-app.mount("/static", StaticFiles(directory="app/static"), name="static")
-templates = Jinja2Templates(directory="templates")
 
 
 async def verify_google_token(token: str) -> dict:
