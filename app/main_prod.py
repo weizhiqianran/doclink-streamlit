@@ -48,7 +48,6 @@ app = FastAPI(title="Doclink")
 # Middleware headers
 @app.middleware("http")
 async def add_security_headers(request: Request, call_next):
-    """Middleware to add security headers including CSP"""
     response = await call_next(request)
 
     response.headers["Content-Security-Policy"] = (
@@ -60,20 +59,18 @@ async def add_security_headers(request: Request, call_next):
         "https://cdn.jsdelivr.net;"
         "style-src 'self' 'unsafe-inline' "
         "https://fonts.googleapis.com "
-        "https://cdn.jsdelivr.net;"
+        "https://cdn.jsdelivr.net "
+        "https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/ "  # Specific Bootstrap CSS
+        "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/;"  # Bootstrap Icons
+        "style-src-elem 'self' 'unsafe-inline' "  # Added style-src-elem
+        "https://fonts.googleapis.com "
+        "https://cdn.jsdelivr.net "
+        "https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/ "
+        "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/;"
         "font-src 'self' https://fonts.gstatic.com "
-        "https://cdn.jsdelivr.net;"
+        "https://cdn.jsdelivr.net data:;"  # Added data: for inline fonts
         "img-src 'self' data: https://www.google-analytics.com;"
         "connect-src 'self' https://www.google-analytics.com;"
-    )
-
-    response.headers.update(
-        {
-            "X-Content-Type-Options": "nosniff",
-            "X-Frame-Options": "DENY",
-            "X-XSS-Protection": "1; mode=block",
-            "Referrer-Policy": "strict-origin-when-cross-origin",
-        }
     )
 
     return response
