@@ -10,9 +10,9 @@ import jwt
 import uuid
 import logging
 from logging.handlers import RotatingFileHandler
-
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
+
 from .api import endpoints
 from .db.database import Database
 
@@ -40,12 +40,46 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
+
 # App initialization
 app = FastAPI(title="Doclink")
-app.mount("/static", StaticFiles(directory="app/static"), name="static")
-templates = Jinja2Templates(directory="templates")
 
-# CORS Configuration
+
+# Middleware headers
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    """Middleware to add security headers including CSP"""
+    response = await call_next(request)
+
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self';"
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' "
+        "https://cdnjs.cloudflare.com "
+        "https://www.googletagmanager.com "
+        "https://www.google-analytics.com "
+        "https://cdn.jsdelivr.net;"
+        "style-src 'self' 'unsafe-inline' "
+        "https://fonts.googleapis.com "
+        "https://cdn.jsdelivr.net;"
+        "font-src 'self' https://fonts.gstatic.com "
+        "https://cdn.jsdelivr.net;"
+        "img-src 'self' data: https://www.google-analytics.com;"
+        "connect-src 'self' https://www.google-analytics.com;"
+    )
+
+    response.headers.update(
+        {
+            "X-Content-Type-Options": "nosniff",
+            "X-Frame-Options": "DENY",
+            "X-XSS-Protection": "1; mode=block",
+            "Referrer-Policy": "strict-origin-when-cross-origin",
+        }
+    )
+
+    return response
+
+
+# CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[FRONTEND_URL],
@@ -53,6 +87,10 @@ app.add_middleware(
     allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
+
+# Static files
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
+templates = Jinja2Templates(directory="templates")
 
 
 async def verify_google_token(token: str) -> dict:
