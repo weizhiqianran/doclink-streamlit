@@ -64,32 +64,6 @@ class Database:
             byte_array.shape[0], -1
         )
 
-    def get_user_info_w_email(self, user_email: str):
-        query_get_user_info = """
-        SELECT DISTINCT user_id, user_name, user_surname, user_password, user_type, is_active, user_created_at
-        FROM user_info
-        WHERE user_email = %s
-        """
-        try:
-            self.cursor.execute(query_get_user_info, (user_email,))
-            data = self.cursor.fetchone()
-            return (
-                {
-                    "user_id": data[0],
-                    "user_name": data[1],
-                    "user_surname": data[2],
-                    "user_password": data[3],
-                    "user_type": data[4],
-                    "is_active": data[5],
-                    "user_created_at": str(data[6]),
-                }
-                if data
-                else None
-            )
-        except DatabaseError as e:
-            self.conn.rollback()
-            raise e
-
     def get_user_info_w_id(self, user_id: str):
         query_get_user_info = """
         SELECT DISTINCT user_name, user_surname, user_email, user_type, user_created_at
@@ -359,49 +333,6 @@ class Database:
             # Rollback in case of error
             self.cursor.execute("ROLLBACK")
             logger.error(f"Error deleting domain {domain_id}: {str(e)}")
-            raise e
-
-    def insert_user_info(
-        self,
-        user_id: str,
-        google_id: str,
-        user_name: str,
-        user_surname: str,
-        user_password: str,
-        user_email: str,
-        picture_url: str,
-        refresh_token: str,
-        access_token: str,
-        user_type: str,
-        is_active: bool,
-    ):
-        query = """
-        INSERT INTO user_info (
-            user_id, google_id, user_name, user_surname, user_password,
-            user_email, picture_url, refresh_token, access_token,
-            user_type, is_active
-        )
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-        """
-        try:
-            self.cursor.execute(
-                query,
-                (
-                    user_id,
-                    google_id,
-                    user_name,
-                    user_surname,
-                    user_password,
-                    user_email,
-                    picture_url,
-                    refresh_token,
-                    access_token,
-                    user_type,
-                    is_active,
-                ),
-            )
-        except DatabaseError as e:
-            self.conn.rollback()
             raise e
 
     def insert_user_feedback(
