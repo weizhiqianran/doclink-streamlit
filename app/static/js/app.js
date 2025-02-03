@@ -2010,121 +2010,107 @@ class LogoutModal extends Component {
     constructor() {
         const element = document.getElementById('logoutConfirmModal');
         super(element);
-        this.setupEventListeners();
         
-        // Set URLs based on environment from serverData
         this.WEB_URL = window.serverData.environment === 'dev' 
             ? 'http://localhost:3000'
             : 'https://doclink.io';
             
-        this.APP_URL = window.serverData.environment === 'dev'
-            ? 'http://localhost:8000'
-            : 'https://doclink.io';
+        this.setupEventListeners();
     }
 
     setupEventListeners() {
         const logoutButton = this.element.querySelector('.alert-button');
         const cancelButton = this.element.querySelector('.btn-cancel');
 
-        logoutButton?.addEventListener('click', async () => {
-            await this.handleLogout();
+        if (logoutButton) {
+            logoutButton.addEventListener('click', async () => {
+                await this.handleLogout();
+            });
+        }
+
+        if (cancelButton) {
+            cancelButton.addEventListener('click', () => {
+                this.hide();
+            });
+        }
+
+        this.element.addEventListener('click', (e) => {
+            if (e.target === this.element) {
+                this.hide();
+            }
         });
 
-        cancelButton?.addEventListener('click', () => {
-            this.hide();
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && this.element.classList.contains('show')) {
+                this.hide();
+            }
         });
     }
 
     async handleLogout() {
         try {
-            // 1. Clear all client-side storage
+            // Clear local app state first
             this.clearClientStorage();
-
-            // 2. Reset app state
             this.resetAppState();
 
-            // 3. Clear server session
-            await this.clearServerSession();
-
-            // 4. Redirect to landing page with session termination
-            window.location.href = `${this.WEB_URL}/api/auth/signout?callbackUrl=/`;
-
+            // Redirect to Next.js signout with callback to home
+            window.location.href = `${this.WEB_URL}/api/auth/signout?callbackUrl=${encodeURIComponent(this.WEB_URL)}`;
+            
         } catch (error) {
             console.error('Logout error:', error);
-            // Fallback to basic redirect if something fails
             window.location.href = this.WEB_URL;
         }
     }
 
     clearClientStorage() {
-        // Clear all local storage
+        // Clear app-specific storage only
         localStorage.clear();
-        
-        // Clear all session storage
         sessionStorage.clear();
         
-        // Clear all cookies
-        const paths = ['/', '/api'];
-        
+        // Clear our app cookies but leave Next.js auth cookies
+        const paths = ['/', '/api', '/chat'];
         paths.forEach(path => {
-            document.cookie = `session=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=${path};`;
-            document.cookie = `next-auth.session-token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=${path};`;
-            
-            if (window.serverData.environment !== 'dev') {
-                document.cookie = `__Secure-next-auth.session-token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=${path}; secure`;
-            }
+            this.clearCookie('session_id', path);
+            // Add any other app-specific cookies here
         });
+    }
+
+    clearCookie(name, path) {
+        document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=${path}`;
     }
 
     resetAppState() {
         if (window.app) {
-            // Reset domain manager
             if (window.app.domainManager) {
                 window.app.domainManager.clearSelection();
                 window.app.domainManager.domains.clear();
             }
 
-            // Reset sidebar
             if (window.app.sidebar) {
                 window.app.sidebar.clearFileSelections();
                 window.app.sidebar.updateFileList([], []);
                 window.app.sidebar.updateDomainSelection(null);
             }
 
-            // Reset chat
             if (window.app.chatManager) {
                 window.app.chatManager.disableChat();
-                window.app.chatManager.messageContainer.innerHTML = '';
+                if (window.app.chatManager.messageContainer) {
+                    window.app.chatManager.messageContainer.innerHTML = '';
+                }
             }
 
-            // Reset user data
+            const resourcesList = document.querySelector('.resources-list');
+            if (resourcesList) {
+                resourcesList.innerHTML = '';
+            }
+
             window.app.userData = null;
             window.app.updateSourcesCount(0);
         }
 
-        // Clear global variables but keep environment
+        // Keep environment info
         const environment = window.serverData.environment;
         window.serverData = { environment };
-    }
-
-    async clearServerSession() {
-        try {
-            if (window.serverData?.sessionId) {
-                await fetch(`${this.APP_URL}/api/v1/auth/logout`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        sessionId: window.serverData.sessionId,
-                        userId: window.serverData.userId
-                    })
-                });
-            }
-        } catch (error) {
-            console.error('Error clearing server session:', error);
-            // Continue with logout even if this fails
-        }
     }
 
     show() {
