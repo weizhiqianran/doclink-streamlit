@@ -210,10 +210,5 @@ async def chat_page(request: Request, session_id: str):
         raise HTTPException(status_code=500, detail="Error rendering application")
 
 
-@app.get("/api/version")
-async def get_version():
-    return {"version": "1.0.0"}
-
-
 # Include other routes
 app.include_router(endpoints.router, prefix="/api/v1")

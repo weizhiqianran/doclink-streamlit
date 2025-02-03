@@ -32,6 +32,11 @@ GOOGLE_REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI")
 
 
 # request functions
+@router.post("/check_version")
+async def get_version():
+    return {"version": "1.0.0"}
+
+
 @router.post("/db/get_user_info")
 async def get_user_info(request: Request):
     try:

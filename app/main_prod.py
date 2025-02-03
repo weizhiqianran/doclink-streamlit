@@ -271,13 +271,8 @@ async def chat_page(request: Request, session_id: str):
             )
 
     except Exception as e:
-        logger.info("Processing subsequent visit with session cookie")
-        raise HTTPException(status_code=500, detail="Error rendering application")
-
-
-@app.get("/api/version")
-async def get_version():
-    return {"version": "1.0.0"}
+        logger.info(f"Error processing subsequent visit with session cookie {e}")
+        raise HTTPException(status_code=500, detail=f"Error rendering application {e}")
 
 
 # Include other routes
