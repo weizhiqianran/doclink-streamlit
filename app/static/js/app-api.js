@@ -1,6 +1,11 @@
 window.checkVersion = async function checkVersion() {
     try {
-        const response = await fetch('/api/version');
+        const response = await fetch('/api/v1/check_version', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
         const data = await response.json();
         const currentVersion = localStorage.getItem('appVersion');
         
