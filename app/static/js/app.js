@@ -2036,9 +2036,13 @@ class LogoutModal extends Component {
             // 1. Clear client-side app state
             this.clearClientStorage();
             this.resetAppState();
-
-            // 2. Redirect to Next.js signout with callback to landing page
-            window.location.href = `${this.WEB_URL}/api/auth/signout?callbackUrl=/`;
+            
+            // 2. Call FastAPI logout endpoint first
+            window.handleLogoutRequest()
+            .finally(() => {
+                // 3. Redirect to Next.js signout with callback to landing page
+                window.location.href = `${this.WEB_URL}/api/auth/signout?callbackUrl=/`;
+            });
 
         } catch (error) {
             console.error('Logout error:', error);

@@ -51,6 +51,32 @@ window.fetchUserInfo = async function(userID) {
     }
 };
 
+window.handleLogoutRequest = async function handleLogoutRequest() {
+    try {
+        const response = await fetch('/api/v1/auth/logout', {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Logout failed');
+        }
+
+        return {
+            success: true
+        };
+    } catch (error) {
+        console.error('Logout request failed:', error);
+        return {
+            success: false,
+            error: error.message
+        };
+    }
+};
+
 window.selectDomain = async function selectDomain(domainId, userID) {
     try {
         const url = `/api/v1/qa/select_domain?userID=${encodeURIComponent(userID)}`;

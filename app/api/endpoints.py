@@ -522,6 +522,23 @@ async def remove_file_upload(
         )
 
 
+@router.post("/auth/logout")
+async def logout():
+    response = JSONResponse(content={"message": "Logged out successfully"})
+
+    # Clear FastAPI session cookie
+    response.delete_cookie(
+        key="session_id",
+        path="/",
+        domain=None,  # This will use the current domain
+        secure=True,
+        httponly=True,
+        samesite="lax",
+    )
+
+    return response
+
+
 # local functions
 def update_selected_domain(user_id: str, domain_id: str):
     try:
