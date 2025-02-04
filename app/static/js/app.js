@@ -2010,52 +2010,36 @@ class LogoutModal extends Component {
     constructor() {
         const element = document.getElementById('logoutConfirmModal');
         super(element);
+        this.setupEventListeners();
         
+        // Set URLs based on environment from serverData
         this.WEB_URL = window.serverData.environment === 'dev' 
             ? 'http://localhost:3000'
             : 'https://doclink.io';
-            
-        this.setupEventListeners();
     }
 
     setupEventListeners() {
         const logoutButton = this.element.querySelector('.alert-button');
         const cancelButton = this.element.querySelector('.btn-cancel');
 
-        if (logoutButton) {
-            logoutButton.addEventListener('click', async () => {
-                await this.handleLogout();
-            });
-        }
-
-        if (cancelButton) {
-            cancelButton.addEventListener('click', () => {
-                this.hide();
-            });
-        }
-
-        this.element.addEventListener('click', (e) => {
-            if (e.target === this.element) {
-                this.hide();
-            }
+        logoutButton?.addEventListener('click', () => {
+            this.handleLogout();
         });
 
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && this.element.classList.contains('show')) {
-                this.hide();
-            }
+        cancelButton?.addEventListener('click', () => {
+            this.hide();
         });
     }
 
-    async handleLogout() {
+    handleLogout() {
         try {
-            // Clear local app state first
+            // 1. Clear client-side app state
             this.clearClientStorage();
             this.resetAppState();
 
-            // Redirect to Next.js signout with callback to home
-            window.location.href = `${this.WEB_URL}/api/auth/signout?callbackUrl=${encodeURIComponent(this.WEB_URL)}`;
-            
+            // 2. Redirect to Next.js signout with callback to landing page
+            window.location.href = `${this.WEB_URL}/api/auth/signout?callbackUrl=/`;
+
         } catch (error) {
             console.error('Logout error:', error);
             window.location.href = this.WEB_URL;
@@ -2063,35 +2047,27 @@ class LogoutModal extends Component {
     }
 
     clearClientStorage() {
-        // Clear app-specific storage only
+        // Clear local and session storage
         localStorage.clear();
         sessionStorage.clear();
-        
-        // Clear our app cookies but leave Next.js auth cookies
-        const paths = ['/', '/api', '/chat'];
-        paths.forEach(path => {
-            this.clearCookie('session_id', path);
-            // Add any other app-specific cookies here
-        });
-    }
-
-    clearCookie(name, path) {
-        document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=${path}`;
     }
 
     resetAppState() {
         if (window.app) {
+            // Reset domain manager
             if (window.app.domainManager) {
                 window.app.domainManager.clearSelection();
                 window.app.domainManager.domains.clear();
             }
 
+            // Reset sidebar
             if (window.app.sidebar) {
                 window.app.sidebar.clearFileSelections();
                 window.app.sidebar.updateFileList([], []);
                 window.app.sidebar.updateDomainSelection(null);
             }
 
+            // Reset chat manager
             if (window.app.chatManager) {
                 window.app.chatManager.disableChat();
                 if (window.app.chatManager.messageContainer) {
@@ -2099,11 +2075,13 @@ class LogoutModal extends Component {
                 }
             }
 
+            // Reset resources
             const resourcesList = document.querySelector('.resources-list');
             if (resourcesList) {
                 resourcesList.innerHTML = '';
             }
 
+            // Clear app user data
             window.app.userData = null;
             window.app.updateSourcesCount(0);
         }
