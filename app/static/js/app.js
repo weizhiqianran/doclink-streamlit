@@ -2037,16 +2037,28 @@ class LogoutModal extends Component {
             this.clearClientStorage();
             this.resetAppState();
             
-            // 2. Call FastAPI logout endpoint first
+            // 2. Call FastAPI logout endpoint
             window.handleLogoutRequest()
             .finally(() => {
-                // 3. Redirect to Next.js signout with callback to landing page
+                // 3. Clear cookies manually as backup
+                this.clearCookies();
+                // 4. Redirect to signout
                 window.location.href = `${this.WEB_URL}/api/auth/signout?callbackUrl=/`;
             });
-
+    
         } catch (error) {
             console.error('Logout error:', error);
             window.location.href = this.WEB_URL;
+        }
+    }
+
+    clearCookies() {
+        const cookies = document.cookie.split(';');
+        const domain = window.location.hostname;
+        for (let cookie of cookies) {
+            const name = cookie.split('=')[0].trim();
+            document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; domain=${domain}`;
+            document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; domain=.${domain}`;
         }
     }
 
