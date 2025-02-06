@@ -51,10 +51,14 @@ window.fetchUserInfo = async function(userID) {
     }
 };
 
-window.handleLogoutRequest = async function handleLogoutRequest() {
+window.handleLogoutRequest = async function handleLogoutRequest(userId, sessionId) {
     try {
         const response = await fetch('/api/v1/auth/logout', {
             method: 'POST',
+            body: JSON.stringify({ 
+                user_id: userId,
+                session_id: sessionId
+            }),
             credentials: 'include',
             headers: {
                 'Content-Type': 'application/json'

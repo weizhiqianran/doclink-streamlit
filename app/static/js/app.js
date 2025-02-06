@@ -2038,7 +2038,7 @@ class LogoutModal extends Component {
             this.resetAppState();
             
             // 2. Call FastAPI logout endpoint
-            window.handleLogoutRequest()
+            window.handleLogoutRequest(window.serverData.userId, window.serverData.sessionId)
             .finally(() => {
                 // 3. Clear cookies manually as backup
                 this.clearCookies();
