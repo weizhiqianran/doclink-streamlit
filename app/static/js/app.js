@@ -2034,8 +2034,8 @@ class LogoutModal extends Component {
     handleLogout() {
         try {
             // 1. Clear client-side app state
-            this.clearClientStorage();
-            this.resetAppState();
+            localStorage.clear();
+            sessionStorage.clear();
             
             // 2. Call FastAPI logout endpoint
             window.handleLogoutRequest(window.serverData.userId, window.serverData.sessionId)
@@ -2060,51 +2060,6 @@ class LogoutModal extends Component {
             document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; domain=${domain}`;
             document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; domain=.${domain}`;
         }
-    }
-
-    clearClientStorage() {
-        // Clear local and session storage
-        localStorage.clear();
-        sessionStorage.clear();
-    }
-
-    resetAppState() {
-        if (window.app) {
-            // Reset domain manager
-            if (window.app.domainManager) {
-                window.app.domainManager.clearSelection();
-                window.app.domainManager.domains.clear();
-            }
-
-            // Reset sidebar
-            if (window.app.sidebar) {
-                window.app.sidebar.clearFileSelections();
-                window.app.sidebar.updateFileList([], []);
-                window.app.sidebar.updateDomainSelection(null);
-            }
-
-            // Reset chat manager
-            if (window.app.chatManager) {
-                window.app.chatManager.disableChat();
-                if (window.app.chatManager.messageContainer) {
-                    window.app.chatManager.messageContainer.innerHTML = '';
-                }
-            }
-
-            // Reset resources
-            const resourcesList = document.querySelector('.resources-list');
-            if (resourcesList) {
-                resourcesList.innerHTML = '';
-            }
-
-            // Clear app user data
-            window.app.userData = null;
-            window.app.updateSourcesCount(0);
-        }
-
-        // Keep environment info
-        const environment = window.serverData.environment;
-        window.serverData = { environment };
     }
 
     show() {
@@ -2557,7 +2512,7 @@ class App {
         }
 
         // Welcome operations
-        const isFirstTime = window.serverData.isFirstTime;
+        const isFirstTime = window.serverData.isFirstTime === 'True';
         if (isFirstTime) {
             const firstTimeMsg = `[header]Welcome to Doclink${this.userData.user_info.user_name ? `, ${this.userData.user_info.user_name}` : ''}👋[/header]\nI've automatically set up your first domain with helpful guide about using Doclink. You can always use this file to get any information about Doclink!\n[header]To get started[/header]\n- Ask any question about Doclink's features and capabilities \n- Try asking "What can Doclink do?" or "How do I organize my documents?"\n- The user guide has been uploaded to your first domain\n- All answers will include source references\n\n[header]Quick Tips[/header]\n- Open & close navigation bar by hovering\n- Click ⚙️ to manage domains and documents\n- Upload files via "Upload Files" button after selecting a domain\n- Check right panel for answer sources\n- Supports PDF, DOCX, Excel, PowerPoint, UDF and TXT formats\n- Create different domains for different topics\n- View highlighted source sections in answers\n- Use file checkboxes to control search scope`;
             this.chatManager.addMessage(firstTimeMsg, 'ai');

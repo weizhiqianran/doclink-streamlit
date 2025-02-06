@@ -542,7 +542,10 @@ async def logout(request: Request):
         )
 
         # Delete user redis session
-        redis_manager.delete_data(f"user:{user_id}:session:{session_id}")
+        redis_key = f"user:{user_id}:session:{session_id}"
+        session_exists = redis_manager.client.exists(redis_key)
+        if session_exists:
+            redis_manager.client.delete(redis_key)
 
         return response
     except Exception as e:
