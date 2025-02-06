@@ -164,19 +164,6 @@ class RedisManager:
             logger.error(f"Error getting keys: {e}")
             return []
 
-    def get_memory_usage(self) -> dict:
-        """Get Redis memory statistics"""
-        try:
-            info = self.client.info(section="memory")
-            return {
-                "used_memory_human": info["used_memory_human"],
-                "peak_memory_human": info["used_memory_peak_human"],
-                "fragmentation_ratio": info["mem_fragmentation_ratio"],
-            }
-        except Exception as e:
-            logger.error(f"Error getting memory usage: {e}")
-            return {}
-
     def get_key_info(self, key: str) -> dict:
         """Get detailed information about a key"""
         try:
