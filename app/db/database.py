@@ -462,31 +462,6 @@ class Database:
             logger.error(f"Error while inserting file content: {str(e)}")
             raise
 
-    def insert_session_info(self, user_id: str, session_id: str):
-        query = """
-        INSERT INTO session_info (user_id, session_id, created_at)
-        VALUES (%s, %s, NOW())
-        """
-        try:
-            self.cursor.execute(query, (user_id, session_id))
-        except Exception as e:
-            self.conn.rollback()
-            raise e
-
-    def update_session_info(self, user_id: str, session_id: str):
-        query = """
-        UPDATE session_info 
-        SET question_count = question_count + 1
-        WHERE user_id = %s AND session_id = %s
-        RETURNING question_count
-        """
-        try:
-            self.cursor.execute(query, (user_id, session_id))
-            return
-        except Exception as e:
-            self.conn.rollback()
-            raise e
-
     def insert_user_rating(
         self, rating_id: str, user_id: str, rating: int, user_note: str
     ):

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, UploadFile, HTTPException, Request, Query, File, Form
 from fastapi.responses import JSONResponse
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 import logging
 import uuid
@@ -523,20 +523,33 @@ async def remove_file_upload(
 
 
 @router.post("/auth/logout")
-async def logout():
-    response = JSONResponse(content={"message": "Logged out successfully"})
+async def logout(request: Request):
+    try:
+        data = await request.json()
+        user_id = data.get("user_id")
+        session_id = data.get("session_id")
 
-    # Clear FastAPI session cookie
-    response.delete_cookie(
-        key="session_id",
-        path="/",
-        domain=None,  # This will use the current domain
-        secure=True,
-        httponly=True,
-        samesite="lax",
-    )
+        response = JSONResponse(content={"message": "Logged out successfully"})
 
-    return response
+        # Clear FastAPI session cookie
+        response.delete_cookie(
+            key="session_id",
+            path="/",
+            domain=None,  # This will use the current domain
+            secure=True,
+            httponly=True,
+            samesite="lax",
+        )
+
+        # Delete user redis session
+        redis_manager.delete_data(f"user:{user_id}:session:{session_id}")
+
+        return response
+    except Exception as e:
+        logging.error(f"Error during logout: {str(e)}")
+        raise HTTPException(
+            content={"message": f"Failed logout, error: {e}"}, status_code=500
+        )
 
 
 # local functions

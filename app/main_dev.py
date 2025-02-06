@@ -185,7 +185,7 @@ async def chat_page(request: Request, session_id: str):
                 value=session_token,
                 httponly=True,
                 secure=False,
-                max_age=86400,  # 1 day
+                max_age=259200,  # 1 day
                 samesite="lax",
             )
 
