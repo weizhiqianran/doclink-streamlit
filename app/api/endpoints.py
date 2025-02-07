@@ -240,7 +240,6 @@ async def select_domain(
 async def generate_answer(
     request: Request,
     userID: str = Query(...),
-    sessionID: str = Query(...),
 ):
     try:
         data = await request.json()
@@ -276,11 +275,6 @@ async def generate_answer(
                 status_code=400,
             )
 
-        with Database() as db:
-            question_count = db.update_session_info(
-                user_id=userID, session_id=sessionID
-            )
-
         # Process search
         answer, resources, resource_sentences = processor.search_index(
             user_query=user_message,
@@ -303,7 +297,6 @@ async def generate_answer(
                 "answer": answer,
                 "resources": resources,
                 "resource_sentences": resource_sentences,
-                "question_count": question_count,
             },
             status_code=200,
         )
