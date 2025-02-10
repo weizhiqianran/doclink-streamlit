@@ -50,6 +50,17 @@ CREATE TABLE IF NOT EXISTS file_content (
     FOREIGN KEY (file_id) REFERENCES file_info(file_id)
 );
 
+CREATE TABLE IF NOT EXISTS session_info (
+    id SERIAL PRIMARY KEY,
+    user_id UUID NOT NULL,
+    session_id UUID NOT NULL,
+    question_count INTEGER DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    total_enterance INTEGER DEFAULT 0,
+    last_enterance TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES user_info(user_id)
+);
+
 CREATE TABLE IF NOT EXISTS default_content (
     content_id SERIAL PRIMARY KEY,
     sentence TEXT NOT NULL,
