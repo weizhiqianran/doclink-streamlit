@@ -6,10 +6,8 @@ from fastapi.responses import RedirectResponse
 
 import requests as http_requests
 import os
-import jwt
 import uuid
 
-from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from .api import endpoints
 from .db.database import Database
@@ -61,27 +59,6 @@ async def verify_google_token(token: str) -> dict:
         raise HTTPException(status_code=401, detail=f"Invalid token: {str(e)}")
 
 
-def create_session_token(user_data: dict) -> str:
-    """Create an encrypted session token"""
-    payload = {
-        "user_id": user_data["user_id"],
-        "email": user_data["email"],
-        "exp": datetime.utcnow() + timedelta(days=1),  # 1 day expiration
-    }
-    return jwt.encode(payload, SECRET_KEY, algorithm="HS256")
-
-
-def verify_session_token(session_token: str) -> dict:
-    """Verify and decode session token"""
-    try:
-        payload = jwt.decode(session_token, SECRET_KEY, algorithms=["HS256"])
-        return payload
-    except jwt.ExpiredSignatureError:
-        raise HTTPException(status_code=401, detail="Session expired")
-    except jwt.InvalidTokenError:
-        raise HTTPException(status_code=401, detail="Invalid session")
-
-
 @app.middleware("http")
 async def auth_middleware(request: Request, call_next):
     """Middleware to check authentication for protected routes"""
@@ -91,21 +68,22 @@ async def auth_middleware(request: Request, call_next):
     if request.url.path in public_paths:
         return await call_next(request)
 
-    # Check if it's a chat route
     if request.url.path.startswith("/chat/"):
-        # Get either query parameters (from Next.js redirect) or session cookie
         token = request.query_params.get("token")
-        session_cookie = request.cookies.get("session_token")
+        session_token = request.cookies.get("session_token")
 
-        if not token and not session_cookie:
+        if not token and not session_token:
             return RedirectResponse(url=FRONTEND_URL)
 
         try:
-            # If we have both token and session, prioritize session
-            if session_cookie:
+            # If we have a session token, verify it with Google
+            if session_token:
                 try:
-                    user_data = verify_session_token(session_cookie)
-                    request.state.user_data = user_data
+                    user_info = await verify_google_token(session_token)
+                    request.state.user_data = {
+                        "user_id": request.query_params.get("userId"),
+                        "email": user_info.get("email"),
+                    }
                     return await call_next(request)
                 except Exception as e:
                     print(f"Error {e}")
@@ -122,8 +100,6 @@ async def auth_middleware(request: Request, call_next):
                 )
                 return await call_next(request)
 
-            # No valid auth method
-            print("No valid authentication method found")
             return RedirectResponse(url=FRONTEND_URL)
 
         except Exception as e:
@@ -150,22 +126,26 @@ async def chat_page(request: Request, session_id: str):
                 "picture": google_user.get("picture"),
             }
 
-            # Create session token
-            session_token = create_session_token(user_data)
-
-            # Create domain if first time
-            if request.state.is_new_user:
-                with Database() as db:
+            # Database updates for session and initial user
+            with Database() as db:
+                # Create domain if first time
+                if request.state.is_new_user:
                     domain_id = str(uuid.uuid4())
                     db.insert_domain_info(
                         user_id=request.state.user_id,
                         domain_id=domain_id,
-                        domain_name="My First Domain",
+                        domain_name="Default",
                         domain_type=0,
                     )
                     db.insert_user_guide(
                         user_id=request.state.user_id, domain_id=domain_id
                     )
+                # Update session information
+                db.upsert_session_info(
+                    user_id=request.state.user_id, session_id=session_id
+                )
+
+                db.conn.commit()
 
             # Create response with template
             response = templates.TemplateResponse(
@@ -179,14 +159,14 @@ async def chat_page(request: Request, session_id: str):
                 },
             )
 
-            # Set session cookie
+            # Set the Google token as both session and drive token
             response.set_cookie(
                 key="session_token",
-                value=session_token,
+                value=request.state.token,
                 httponly=True,
                 secure=False,
-                max_age=259200,  # 1 day
-                samesite="lax",
+                max_age=3600,
+                samesite="strict",
             )
 
             return response
@@ -194,6 +174,12 @@ async def chat_page(request: Request, session_id: str):
         # If we have user_data from cookie, this is a subsequent visit
         else:
             user_data = request.state.user_data
+
+            with Database() as db:
+                db.upsert_session_info(
+                    user_id=user_data["user_id"], session_id=session_id
+                )
+
             return templates.TemplateResponse(
                 "app.html",
                 {
@@ -208,6 +194,18 @@ async def chat_page(request: Request, session_id: str):
     except Exception as e:
         print(f"Error in chat page: {str(e)}")
         raise HTTPException(status_code=500, detail="Error rendering application")
+
+
+@app.get("/api/get_drive_token")
+async def get_drive_token(request: Request):
+    session_token = request.cookies.get("session_token")
+    if not session_token:
+        raise HTTPException(status_code=401, detail="No access token found")
+    try:
+        await verify_google_token(session_token)
+        return {"accessToken": session_token}
+    except Exception as e:
+        raise HTTPException(status_code=401, detail=f"Invalid or expired token {e}")
 
 
 # Include other routes
