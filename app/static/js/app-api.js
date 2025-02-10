@@ -1,28 +1,3 @@
-window.checkVersion = async function checkVersion() {
-    try {
-        const response = await fetch('/api/v1/check_version', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
-        const data = await response.json();
-        const currentVersion = localStorage.getItem('appVersion');
-        
-        if (!currentVersion) {
-            localStorage.setItem('appVersion', data.version);
-            return;
-        }
-
-        if (data.version !== currentVersion) {
-            localStorage.setItem('appVersion', data.version);
-            window.location.reload(true);
-        }
-    } catch (error) {
-        console.error('Version check failed:', error);
-    }
-}
-
 window.fetchUserInfo = async function(userID) {
     try {
         const response = await fetch('/api/v1/db/get_user_info', {
@@ -158,14 +133,14 @@ window.createDomain = async function createDomain(userId, domainName) {
             })
         });
 
+        const data = await response.json();
+
         if (!response.ok) {
-            return { success: 0, data: null };
+            return { success: 0, message: data.message || 'Failed to create domain' };
         }
 
-        const data = await response.json();
-        
         if (data.message !== "success") {
-            return { success: 0, id: null };
+            return { success: 0, message: data.message };
         }
 
         return { success: 1, id: data.domain_id };
@@ -205,7 +180,7 @@ window.deleteDomain = async function deleteDomain(domainId) {
 
         return {
             success: true,
-            message: "Domain successfully deleted"
+            message: "Knowledge Base deleted"
         };
 
     } catch (error) {
@@ -245,23 +220,87 @@ window.storeFile = async function(userID, formData) {
     }
 };
 
+window.storedriveFile = async function(userID, formData) {
+    try {
+        const response = await fetch(`/api/v1/io/store_drive_file?userID=${encodeURIComponent(userID)}`, {
+            method: 'POST',
+            body: formData
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to store drive file');
+        }
+
+        const data = await response.json();
+        
+        if (data.message !== "success") {
+            return 0;
+        }
+
+        return 1;
+
+    } catch (error) {
+        console.error('Error storing file:', error);
+        return {
+            success: false,
+            error: error.message
+        };
+    }
+};
+
+window.storeURL = async function(userID, url) {
+    try {
+        const formData = new FormData();
+        formData.append('url', url);
+
+        const response = await fetch(`/api/v1/io/store_url?userID=${encodeURIComponent(userID)}`, {
+            method: 'POST',
+            body: formData
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to store url');
+        }
+
+        const data = await response.json();
+        
+        if (data.message !== "success") {
+            return 0;
+        }
+
+        return 1;
+
+    } catch (error) {
+        console.error('Error storing URL:', error);
+        return {
+            success: false,
+            error: error.message
+        };
+    }
+};
+
 window.uploadFiles = async function(userID) {
     try {
         const response = await fetch(`/api/v1/io/upload_files?userID=${userID}`, {
             method: 'POST'
         });
 
-        if (!response.ok) {
-            throw new Error('Failed to process uploads');
-        }
-
         const data = await response.json();
-        
-        if (data.message !== "success") {
+
+        if (data.message.includes("can only have 20 total files")) {
             return {
                 success: false,
                 error: data.message || 'Upload process failed'
             };
+        } else if (data.message !== "success")  {
+            return {
+                success: false,
+                error: data.message
+            };
+        }
+
+        if (!response.ok) {
+            throw new Error('Failed to process uploads');
         }
 
         return {
@@ -338,6 +377,13 @@ window.sendMessage = async function(message, userId, sessionId, fileIds) {
         });
 
         const data = await response.json();
+
+        if (data.message && data.message.includes("Daily question limit reached")) {
+            return {
+                message: data.message || 'Daily question limit reached!',
+                status: 400
+            };
+        }
 
         if (!response.ok) {
             return {

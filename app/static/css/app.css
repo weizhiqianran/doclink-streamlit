@@ -90,6 +90,32 @@ body {
   z-index: 2;
 }
 
+.drive-select-btn {
+  padding: 12px;
+  background-color: transparent;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: 12px;
+  color: #10B981;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.drive-select-btn:hover {
+  background-color: rgba(16, 185, 129, 0.1);
+  transform: translateY(-1px);
+}
+
+.drive-select-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.drive-icon {
+  width: 20px;
+  height: 20px;
+}
+
 .section-divider {
   width: 1px;
   background-color: rgba(255, 255, 255, 0.1);
@@ -1107,6 +1133,57 @@ body {
   display: none;
 }
 
+.limit-indicator {
+  background: rgba(255, 255, 255, 0.02);
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.limit-indicator .progress {
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.limit-indicator .progress-bar {
+  transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+.bg-warning {
+  background-color: #ffc107 !important;
+}
+
+.limit-indicator small {
+  font-size: 12px;
+}
+
+.limits-container {
+  padding: 1rem 0;
+}
+
+.upgrade-button {
+  background-color: #10B981;
+  color: white;
+  border: none;
+  padding: 8px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+}
+
+.upgrade-button:hover {
+  background-color: #0DA271;
+  transform: translateY(-1px);
+}
+
+.text-white-50 {
+  font-size: 11px;
+  opacity: 0.5;
+}
+
 #deleteConfirmModal .modal-backdrop.show {
   backdrop-filter: none !important;
   background-color: rgba(0, 0, 0, 0.5) !important;
@@ -2080,6 +2157,91 @@ body {
   gap: 12px;
 }
 
+.resources-placeholder {
+  color: rgba(255, 255, 255, 0.5);
+  text-align: center;
+  padding: 2rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.resource-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 10px 0;
+  background-color: var(--sidebar-bg);
+  border-radius: 8px;
+  overflow: hidden;
+  font-size: 10px;
+  scale: 1;
+}
+
+.resource-table th,
+.resource-table td {
+  padding: 4px;
+  text-align: left;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  white-space: nowrap;
+}
+
+.resource-table th {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: var(--primary-green);
+  font-weight: 500;
+  font-size: 12px; 
+}
+
+.resource-table td {
+  font-size: 11px;  /* Slightly smaller for data cells */
+}
+
+.resource-table tr:hover {
+  background-color: rgba(255, 255, 255, 0.051);
+}
+
+.resource-table .align-right {
+  text-align: right;
+}
+
+.resource-table .indent-cell {
+  padding-left: 16px;
+}
+
+.resource-table .numeric {
+  font-weight: 500;
+}
+
+.resource-table .identifier {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.description {
+  overflow-x: auto;
+  max-width: 100%;
+  padding-bottom: 4px; /* Space for potential scrollbar */
+}
+
+.description-content {
+  margin-bottom: 10px;
+}
+
+.table-wrapper {
+  margin: 10px 0;
+}
+
+.description > :last-child {
+  margin-bottom: 0;
+}
+
+/* Mobile responsiveness for tables */
+@media (max-width: 768px) {
+  .resource-table {
+      display: block;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+  }
+}
+
 .source-info {
   display: flex;
   align-items: center;
@@ -2868,4 +3030,72 @@ textarea.form-control {
   .domain-info h6 {
     max-width: 137px;
   }
+}
+
+/* URL Modal */
+
+.url-input-btn {
+  background: transparent;
+  border: 1px solid rgba(16, 185, 129, 0.5);
+  color: var(--primary-green);
+  padding: 12px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.url-input-btn:hover {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: var(--primary-green);
+}
+
+.url-input-btn i {
+  font-size: 1.2rem;
+}
+
+.url-input-container {
+  background: var(--sidebar-bg);
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+.url-input {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: white !important;
+  padding: 12px 16px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.url-input:focus {
+  outline: none;
+  border-color: var(--primary-green) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+.url-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.add-url-btn {
+  width: 100%;
+  padding: 12px;
+  background: var(--primary-green);
+  border: none;
+  border-radius: 12px;
+  color: white;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.add-url-btn:disabled {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.4);
+  cursor: not-allowed;
+}
+
+.add-url-btn:not(:disabled):hover {
+  background: #0da271;
 }
