@@ -1,4 +1,7 @@
 from fastapi import APIRouter, UploadFile, HTTPException, Request, Query, File, Form
+from google.oauth2.credentials import Credentials
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaIoBaseDownload
 from fastapi.responses import JSONResponse
 from datetime import datetime
 import os
@@ -6,9 +9,11 @@ import logging
 import uuid
 import base64
 import psycopg2
+import io
 
 from .core import Processor
 from .core import Authenticator
+from .core import Encryptor
 from ..db.database import Database
 from ..redis_manager import RedisManager, RedisConnectionError
 
@@ -17,6 +22,7 @@ router = APIRouter()
 processor = Processor()
 authenticator = Authenticator()
 redis_manager = RedisManager()
+encryptor = Encryptor()
 
 # logger
 logging.basicConfig(level=logging.INFO)
@@ -26,14 +32,10 @@ logger = logging.getLogger(__name__)
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
 GOOGLE_REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI")
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 
 
 # request functions
-@router.post("/check_version")
-async def get_version():
-    return {"version": "1.0.0"}
-
-
 @router.post("/db/get_user_info")
 async def get_user_info(request: Request):
     try:
@@ -87,16 +89,16 @@ async def create_domain(
         domain_name = data.get("domain_name")
         domain_id = str(uuid.uuid4())
         with Database() as db:
-            success = db.create_domain(
+            result = db.create_domain(
                 user_id=userID,
                 domain_id=domain_id,
                 domain_name=domain_name,
                 domain_type=1,
             )
 
-            if not success:
+            if not result["success"]:
                 return JSONResponse(
-                    content={"message": "error while creating domain"},
+                    content={"message": result["message"]},
                     status_code=400,
                 )
 
@@ -240,6 +242,7 @@ async def select_domain(
 async def generate_answer(
     request: Request,
     userID: str = Query(...),
+    sessionID: str = Query(...),
 ):
     try:
         data = await request.json()
@@ -259,6 +262,15 @@ async def generate_answer(
                 content={"message": "You didn't select any files..."},
                 status_code=400,
             )
+
+        with Database() as db:
+            update_result = db.update_session_info(user_id=userID, session_id=sessionID)
+
+            if not update_result["success"]:
+                return JSONResponse(
+                    content={"message": update_result["message"]},
+                    status_code=400,
+                )
 
         # Get required data from Redis
         index, filtered_content, boost_info, index_header = processor.filter_search(
@@ -297,6 +309,7 @@ async def generate_answer(
                 "answer": answer,
                 "resources": resources,
                 "resource_sentences": resource_sentences,
+                "question_count": update_result["question_count"],
             },
             status_code=200,
         )
@@ -370,6 +383,167 @@ async def store_file(
         )
 
 
+@router.post("/io/store_drive_file")
+async def store_drive_file(
+    userID: str = Query(...),
+    lastModified: str = Form(...),
+    driveFileId: str = Form(...),
+    driveFileName: str = Form(...),
+    accessToken: str = Form(...),
+):
+    try:
+        credentials = Credentials(
+            token=accessToken,
+            client_id=GOOGLE_CLIENT_ID,
+            client_secret=GOOGLE_CLIENT_SECRET,
+            token_uri="https://oauth2.googleapis.com/token",
+        )
+
+        drive_service = build("drive", "v3", credentials=credentials)
+
+        google_mime_types = {
+            "application/vnd.google-apps.document": ("application/pdf", ".pdf"),
+            "application/vnd.google-apps.spreadsheet": (
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                ".xlsx",
+            ),
+            "application/vnd.google-apps.presentation": (
+                "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+                ".pptx",
+            ),
+            "application/vnd.google-apps.script": ("text/plain", ".txt"),
+        }
+
+        file_metadata = (
+            drive_service.files().get(fileId=driveFileId, fields="mimeType").execute()
+        )
+        mime_type = file_metadata["mimeType"]
+
+        if mime_type in google_mime_types:
+            export_mime_type, extension = google_mime_types[mime_type]
+            request = drive_service.files().export_media(
+                fileId=driveFileId, mimeType=export_mime_type
+            )
+
+            if not driveFileName.endswith(extension):
+                driveFileName += extension
+        else:
+            request = drive_service.files().get_media(fileId=driveFileId)
+
+        file_stream = io.BytesIO()
+        downloader = MediaIoBaseDownload(file_stream, request)
+
+        done = False
+        while not done:
+            _, done = downloader.next_chunk()
+
+        file_stream.seek(0)
+        file_bytes = file_stream.read()
+
+        if not file_bytes:
+            return JSONResponse(
+                content={
+                    "message": f"Empty file {driveFileName}. If you think not, please report this to us!"
+                },
+                status_code=400,
+            )
+
+        file_data = processor.rf.read_file(
+            file_bytes=file_bytes, file_name=driveFileName
+        )
+
+        if not file_data["sentences"]:
+            return JSONResponse(
+                content={
+                    "message": f"No content to extract in {driveFileName}. If there is please report this to us!"
+                },
+                status_code=400,
+            )
+
+        file_embeddings = processor.ef.create_embeddings_from_sentences(
+            sentences=file_data["sentences"]
+        )
+
+        redis_key = f"user:{userID}:upload:{driveFileName}"
+        upload_data = {
+            "file_name": driveFileName,
+            "last_modified": datetime.fromtimestamp(int(lastModified) / 1000).strftime(
+                "%Y-%m-%d"
+            )[:20],
+            "sentences": file_data["sentences"],
+            "page_numbers": file_data["page_number"],
+            "is_headers": file_data["is_header"],
+            "is_tables": file_data["is_table"],
+            "embeddings": file_embeddings,
+        }
+
+        redis_manager.set_data(redis_key, upload_data, expiry=3600)
+
+        return JSONResponse(
+            content={"message": "success", "file_name": driveFileName}, status_code=200
+        )
+
+    except Exception as e:
+        logging.error(f"Error storing Drive file {driveFileName}: {str(e)}")
+        return JSONResponse(
+            content={"message": f"Error storing file: {str(e)}"}, status_code=500
+        )
+
+
+@router.post("/io/store_url")
+async def store_url(userID: str = Query(...), url: str = Form(...)):
+    try:
+        if not processor.ws.url_validator(url):
+            return JSONResponse(
+                content={"message": "Invalid URL. Please enter a valid URL."},
+                status_code=400,
+            )
+
+        html = processor.ws.request_creator(url)
+        if not html:
+            return JSONResponse(
+                content={"message": "Error fetching the URL. Please try again later."},
+                status_code=400,
+            )
+
+        file_data = processor.rf.read_url(html_content=html)
+
+        if not file_data["sentences"]:
+            return JSONResponse(
+                content={
+                    "message": f"No content to extract in {url}. If there is please report this to us!"
+                },
+                status_code=400,
+            )
+
+        file_embeddings = processor.ef.create_embeddings_from_sentences(
+            sentences=file_data["sentences"]
+        )
+
+        redis_key = f"user:{userID}:upload:{url}"
+        upload_data = {
+            "file_name": url,
+            "last_modified": datetime.now().strftime("%Y-%m-%d"),
+            "sentences": file_data["sentences"],
+            "page_numbers": file_data["page_number"],
+            "is_headers": file_data["is_header"],
+            "is_tables": file_data["is_table"],
+            "embeddings": file_embeddings,
+        }
+
+        redis_manager.set_data(redis_key, upload_data, expiry=3600)
+
+        return JSONResponse(
+            content={"message": "success", "file_name": url}, status_code=200
+        )
+
+    except Exception as e:
+        logging.error(f"Error storing URL {url}: {str(e)}")
+        return JSONResponse(
+            content={"message": f"Error storing URL: {str(e)}"}, status_code=500
+        )
+
+
 @router.post("/io/upload_files")
 async def upload_files(userID: str = Query(...)):
     try:
@@ -419,7 +593,9 @@ async def upload_files(userID: str = Query(...)):
                     file_content_batch.append(
                         (
                             file_id,
-                            upload_data["sentences"][i],
+                            encryptor.encrypt(
+                                text=upload_data["sentences"][i], auth_data=file_id
+                            ),
                             upload_data["page_numbers"][i],
                             upload_data["is_headers"][i],
                             upload_data["is_tables"][i],
@@ -430,11 +606,11 @@ async def upload_files(userID: str = Query(...)):
                 # Clean up Redis
                 redis_manager.delete_data(redis_key)
 
-            # Bulk insert
-            success = db.insert_file_batches(file_info_batch, file_content_batch)
-            if not success:
+            # Bulk insert with limit check
+            result = db.insert_file_batches(file_info_batch, file_content_batch)
+            if not result["success"]:
                 return JSONResponse(
-                    content={"message": "Failed to process files"}, status_code=500
+                    content={"message": result["message"]}, status_code=400
                 )
             db.conn.commit()
 

@@ -2,11 +2,16 @@ from typing import List
 import numpy as np
 import bcrypt
 import re
+import base64
+import os
+from dotenv import load_dotenv
+from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
 from ..functions.reading_functions import ReadingFunctions
 from ..functions.embedding_functions import EmbeddingFunctions
 from ..functions.indexing_functions import IndexingFunctions
 from ..functions.chatbot_functions import ChatbotFunctions
+from ..functions.scraping_functions import Webscraper
 
 
 class Authenticator:
@@ -23,6 +28,42 @@ class Authenticator:
         return bcrypt.hashpw(password.encode("utf-8"), salt).decode("utf-8")
 
 
+class Encryptor:
+    def __init__(self):
+        load_dotenv()
+        self.key = os.getenv("ENCRYPTION_KEY")
+        self.email_auth = "EMAIL_AUTH_DATA_2025"
+        self.email_nonce = self.email_auth.encode("utf-8")[:12].ljust(12, b"\0")
+        self._key_bytes = base64.b64decode(self.key)
+        self.aesgcm = AESGCM(self._key_bytes)
+        self.email_auth = "EMAIL_AUTH_DATA_2025"
+        self.email_nonce = self.email_auth.encode("utf-8")[:12].ljust(12, b"\0")
+
+    def encrypt(self, text: str, auth_data) -> str:
+        try:
+            nonce = os.urandom(12)
+            encrypted_data = self.aesgcm.encrypt(
+                nonce, text.encode("utf-8"), auth_data.encode("utf-8")
+            )
+            combined_encrypt = nonce + encrypted_data
+            encrypted_sentence = base64.b64encode(combined_encrypt).decode("utf-8")
+            return encrypted_sentence
+        except Exception as e:
+            raise e
+
+    def decrypt(self, encrypted_data: str, auth_data) -> str:
+        try:
+            decoded_text = base64.b64decode(encrypted_data.encode("utf-8"))
+            nonce = decoded_text[:12]
+            encrypted_text = decoded_text[12:]
+            decrypted_data = self.aesgcm.decrypt(
+                nonce, encrypted_text, auth_data.encode("utf-8")
+            )
+            return decrypted_data.decode("utf-8")
+        except Exception as e:
+            raise e
+
+
 class Processor:
     def __init__(
         self,
@@ -31,6 +72,8 @@ class Processor:
         self.rf = ReadingFunctions()
         self.indf = IndexingFunctions()
         self.cf = ChatbotFunctions()
+        self.en = Encryptor()
+        self.ws = Webscraper()
 
     def create_index(self, embeddings: np.ndarray, index_type: str = "flat"):
         if index_type == "flat":
@@ -324,14 +367,19 @@ class Processor:
 
         for i, tuple in enumerate(merged_truples):
             if tuple[0] == tuple[1]:
-                windened_sentence = " ".join(domain_content[tuple[0]][0])
-                context += f"Context{i+1}: File:{resources['file_names'][i]}, Confidence:{(len(sentence_index_list)-i)/len(sentence_index_list)}, Table\n{windened_sentence}\n"
+                windened_sentence = " ".join(
+                    self.en.decrypt(
+                        domain_content[tuple[0]][0], domain_content[tuple[0]][4]
+                    )
+                )
+                context += f"Context{i + 1}: File:{resources['file_names'][i]}, Confidence:{(len(sentence_index_list) - i) / len(sentence_index_list)}, Table\n{windened_sentence}\n"
                 context_windows.append(windened_sentence)
             else:
                 windened_sentence = " ".join(
-                    domain_content[index][0] for index in range(tuple[0], tuple[1] + 1)
+                    self.en.decrypt(domain_content[index][0], domain_content[index][4])
+                    for index in range(tuple[0], tuple[1] + 1)
                 )
-                context += f"Context{i+1}: File:{resources['file_names'][i]}, Confidence:{(len(sentence_index_list)-i)/len(sentence_index_list)}, {windened_sentence}\n\n"
+                context += f"Context{i + 1}: File:{resources['file_names'][i]}, Confidence:{(len(sentence_index_list) - i) / len(sentence_index_list)}, {windened_sentence}\n\n"
                 context_windows.append(windened_sentence)
 
         return context, context_windows, resources
@@ -401,9 +449,15 @@ class Processor:
         )
 
         for i in range(0, detected_sentence_amount):
-            if re.match(r"\b[a-zA-Z]{" + str(4) + r",}\b", domain_content[i][0]) or (
-                domain_content[i][0][0] == "|" and domain_content[i][0][-1] == "|"
+            decrypted_content = self.en.decrypt(
+                domain_content[i][0], domain_content[i][4]
+            )
+            if re.match(r"\b[a-zA-Z]{" + str(4) + r",}\b", decrypted_content) or (
+                decrypted_content[0] == "|" and decrypted_content[-1] == "|"
             ):
-                lang = self.cf.detect_language(domain_content[i][0])
+                lang = self.cf.detect_language(decrypted_content)
                 file_lang[lang] = file_lang.get(lang, 0) + 1
-        return max(file_lang, key=file_lang.get)
+        try:
+            return max(file_lang, key=file_lang.get)
+        except ValueError:
+            return "en"

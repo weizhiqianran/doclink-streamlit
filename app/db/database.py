@@ -387,17 +387,24 @@ class Database:
         self, user_id: str, domain_name: str, domain_id: str, domain_type: int
     ):
         query_count_domains = """
-        SELECT COUNT(*)
-        FROM domain_info
-        WHERE user_id = %s
+        SELECT COUNT(*), user_type
+        FROM domain_info d
+        JOIN user_info u ON d.user_id = u.user_id
+        WHERE u.user_id = %s
+        GROUP BY user_type
         """
 
         try:
             self.cursor.execute(query_count_domains, (user_id,))
-            domain_count = self.cursor.fetchone()[0]
+            result = self.cursor.fetchall()
 
-            if domain_count >= 10:
-                return None
+            domain_count, user_type = result[0][0], result[0][1]
+
+            if user_type == "free" and domain_count >= 3:
+                return {
+                    "success": False,
+                    "message": "Free users can only create up to 3 domains. Upgrade account to create more domains!",
+                }
 
             query_insert = """
             INSERT INTO domain_info (user_id, domain_id, domain_name, domain_type)
@@ -410,21 +417,54 @@ class Database:
             )
             created_domain_id = self.cursor.fetchone()[0]
 
-            return 1 if created_domain_id else None
+            return {
+                "success": True,
+                "domain_id": created_domain_id,
+                "message": "success",
+            }
 
         except DatabaseError as e:
             self.conn.rollback()
             raise e
+
+    def get_user_total_file_count(self, user_id: str):
+        query = """
+        SELECT COUNT(f.file_id), u.user_type
+        FROM file_info f
+        JOIN user_info u ON f.user_id = u.user_id
+        WHERE f.user_id = %s
+        GROUP BY u.user_type
+        """
+        try:
+            self.cursor.execute(query, (user_id,))
+            result = self.cursor.fetchall()
+
+            file_count, user_type = result[0][0], result[0][1]
+
+            return file_count, user_type
+        except Exception as e:
+            self.conn.rollback()
+            logger.error(f"Error in user total file processing: {str(e)}")
+            return False
 
     def insert_file_batches(
         self, file_info_batch: list, file_content_batch: list
     ) -> bool:
         """Process both file info and content in a single transaction."""
         try:
+            user_id = file_info_batch[0][0]
+            file_count, user_type = self.get_user_total_file_count(user_id)
+
+            if user_type == "free" and file_count + len(file_info_batch) > 20:
+                return {
+                    "success": False,
+                    "message": f"Free users can only have 20 total files. You currently have {file_count} files across all domains. Upgrade to add more!",
+                }
+
             self._insert_file_info_batch(file_info_batch)
             self._insert_file_content_batch(file_content_batch)
 
-            return True
+            return {"success": True, "message": "Files uploaded successfully"}
         except Exception as e:
             self.conn.rollback()
             logger.error(f"Error in batch processing: {str(e)}")
@@ -461,6 +501,86 @@ class Database:
         except Exception as e:
             logger.error(f"Error while inserting file content: {str(e)}")
             raise
+
+    def upsert_session_info(self, user_id: str, session_id: str):
+        check_query = """
+        SELECT id FROM session_info 
+        WHERE user_id = %s AND session_id = %s
+        """
+
+        update_query = """
+        UPDATE session_info 
+        SET last_enterance = NOW(),
+            total_enterance = total_enterance + 1
+        WHERE user_id = %s AND session_id = %s
+        """
+
+        insert_query = """
+        INSERT INTO session_info (user_id, session_id, last_enterance, total_enterance)
+        VALUES (%s, %s, NOW(), 1)
+        """
+
+        try:
+            self.cursor.execute(check_query, (user_id, session_id))
+            exists = self.cursor.fetchone()
+
+            if exists:
+                self.cursor.execute(update_query, (user_id, session_id))
+            else:
+                self.cursor.execute(insert_query, (user_id, session_id))
+
+        except Exception as e:
+            self.conn.rollback()
+            raise e
+
+    def update_session_info(self, user_id: str, session_id: str):
+        query_get_daily_count = """
+        SELECT sum(question_count), u.user_type
+        FROM session_info s
+        JOIN user_info u ON s.user_id = u.user_id
+        WHERE s.user_id = 'f7ac60c6-529c-4b41-998c-9b0448463486' 
+        AND s.created_at >= CURRENT_TIMESTAMP - INTERVAL '24 hours'AND s.created_at <= CURRENT_TIMESTAMP
+        GROUP BY u.user_type;
+        """
+        query = """
+        UPDATE session_info 
+        SET question_count = question_count + 1
+        WHERE user_id = %s AND session_id = %s
+        RETURNING question_count
+        """
+        try:
+            self.cursor.execute(query_get_daily_count, (user_id,))
+            result = self.cursor.fetchall()
+
+            if not result:
+                # No questions today, get user type
+                self.cursor.execute(
+                    "SELECT user_type FROM user_info WHERE user_id = %s", (user_id,)
+                )
+                user_type = self.cursor.fetchone()[0]
+                daily_count = 0
+            else:
+                daily_count, user_type = result[0][0], result[0][1]
+
+            # Check free user limits
+            if user_type == "free" and daily_count >= 50:
+                return {
+                    "success": False,
+                    "message": "Daily question limit reached for free users. Please try again tomorrow or upgrade your plan!",
+                    "question_count": daily_count,
+                }
+
+            self.cursor.execute(query, (user_id, session_id))
+            question_count = self.cursor.fetchone()[0]
+
+            return {
+                "success": True,
+                "message": "success",
+                "question_count": question_count,
+            }
+        except Exception as e:
+            self.conn.rollback()
+            raise e
 
     def insert_user_rating(
         self, rating_id: str, user_id: str, rating: int, user_note: str
