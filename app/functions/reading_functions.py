@@ -14,6 +14,7 @@ from docling.document_converter import (
     DocumentConverter,
     WordFormatOption,
     PowerpointFormatOption,
+    HTMLFormatOption,
 )
 
 
@@ -46,10 +47,12 @@ class ReadingFunctions:
                 InputFormat.PPTX,
                 InputFormat.XLSX,
                 InputFormat.PDF,
+                InputFormat.HTML,
             ],
             format_options={
                 InputFormat.DOCX: WordFormatOption(pipeline_cls=SimplePipeline),
                 InputFormat.PPTX: PowerpointFormatOption(pipeline_cls=SimplePipeline),
+                InputFormat.HTML: HTMLFormatOption(pipeline_cls=SimplePipeline),
             },
         )
 
@@ -79,6 +82,50 @@ class ReadingFunctions:
 
         except Exception as e:
             raise ValueError(f"Error processing {file_name}: {str(e)}")
+
+    def read_url(self, html_content: tuple):
+        html_data = {
+            "sentences": [],
+            "page_number": [],
+            "is_header": [],
+            "is_table": [],
+        }
+
+        try:
+            with tempfile.NamedTemporaryFile(delete=True, suffix=".html") as temp_file:
+                temp_file.write(html_content.encode("utf-8"))
+                temp_file.flush()
+                html_path = Path(temp_file.name)
+                md_text = self.converter.convert(
+                    html_path
+                ).document.export_to_markdown()
+                splits = self.markdown_splitter.split_text(md_text)
+
+                for split in splits:
+                    if (
+                        not len(split.page_content) > 5
+                        or re.match(r"^[^\w]*$", split.page_content)
+                        or split.page_content[:4] == "<!--"
+                    ):
+                        continue
+                    elif split.metadata and split.page_content[0] == "#":
+                        html_data["sentences"].append(split.page_content)
+                        html_data["is_header"].append(True)
+                        html_data["is_table"].append(False)
+                        html_data["page_number"].append(1)
+                    elif split.page_content[0] == "|" and split.page_content[-1] == "|":
+                        html_data["sentences"].append(split.page_content)
+                        html_data["is_header"].append(False)
+                        html_data["is_table"].append(True)
+                        html_data["page_number"].append(1)
+                    else:
+                        html_data["sentences"].append(split.page_content)
+                        html_data["is_header"].append(False)
+                        html_data["is_table"].append(False)
+                        html_data["page_number"].append(1)
+            return self._chunk_html(html_data)
+        except Exception as e:
+            raise ValueError(f"Error processing HTML content: {str(e)}")
 
     def _process_pdf(self, file_bytes: bytes):
         pdf_data = {"sentences": [], "page_number": [], "is_header": [], "is_table": []}
@@ -435,6 +482,43 @@ class ReadingFunctions:
         docs = self.nlp(text)
         sentences = [sent.text.replace("\n", " ").strip() for sent in docs.sents]
         return [sentence for sentence in sentences if len(sentence) > 15]
+
+    def _chunk_html(self, html_text: str, max_tokens: int = 2000):
+        chunked_data = {
+            "sentences": [],
+            "page_number": [],
+            "is_header": [],
+            "is_table": [],
+        }
+
+        current_length = 0
+
+        for i, sentence in enumerate(html_text["sentences"]):
+            estimated_tokens = len(sentence.split())
+
+            if estimated_tokens > max_tokens:
+                words = sentence.split()
+                for j in range(0, len(words), max_tokens):
+                    chunk = " ".join(words[j : j + max_tokens])
+                    chunked_data["sentences"].append(chunk)
+                    chunked_data["page_number"].append(html_text["page_number"][i])
+                    chunked_data["is_header"].append(html_text["is_header"][i])
+                    chunked_data["is_table"].append(html_text["is_table"][i])
+            else:
+                if current_length + estimated_tokens > max_tokens:
+                    chunked_data["sentences"].append(sentence)
+                    chunked_data["page_number"].append(html_text["page_number"][i])
+                    chunked_data["is_header"].append(html_text["is_header"][i])
+                    chunked_data["is_table"].append(html_text["is_table"][i])
+                    current_length = 0
+                else:
+                    chunked_data["sentences"].append(sentence)
+                    chunked_data["page_number"].append(html_text["page_number"][i])
+                    chunked_data["is_header"].append(html_text["is_header"][i])
+                    chunked_data["is_table"].append(html_text["is_table"][i])
+                    current_length += estimated_tokens
+
+        return chunked_data
 
     def _get_file_size(self, file_bytes: bytes) -> None:
         return len(file_bytes) / (1024 * 1024)

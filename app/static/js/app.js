@@ -876,25 +876,6 @@ class FileUploadModal extends Component {
         this.setupEventListeners();
         this.setupCloseButton();
         this.currentpicker = null;
-        this.accessToken = null;
-        this.initializeAccessToken();
-    }
-
-    async initializeAccessToken() {
-        try {
-            const response = await fetch('/api/get_drive_token', {
-                credentials: 'include'
-            });
-            
-            if (!response.ok) {
-                throw new Error('Failed to fetch access token');
-            }
-            
-            const data = await response.json();
-            this.accessToken = data.accessToken;
-        } catch (error) {
-            console.error('Error fetching access token:', error);
-        }
     }
 
     render() {
@@ -904,7 +885,7 @@ class FileUploadModal extends Component {
                     <div class="domain-modal-wrapper">
                         <div class="modal-header border-0 d-flex align-items-center">
                             <div>
-                                <h6 class="mb-0">Selected: <span class="domain-name text-primary-green text-truncate"></span></h6>
+                                <h6 class="mb-0">Selected Domain: <span class="domain-name text-primary-green text-truncate"></span></h6>
                             </div>
                             <button type="button" class="close-button" data-bs-dismiss="modal">
                                 <i class="bi bi-x"></i>
@@ -931,7 +912,7 @@ class FileUploadModal extends Component {
                                             <i class="bi bi-cloud-upload text-primary-green"></i>
                                         </div>
                                     </div>
-                                    <h5 class="mb-2">Add Sources</h5>
+                                    <h5 class="mb-2">Upload Files</h5>
                                     <p class="mb-3">Drag & drop or <span class="text-primary-green choose-text">choose files</span> to upload</p>
                                     <small class="text-secondary">Supported file types: PDF, DOCX, XLSX, PPTX, UDF and TXT</small>
                                     <input type="file" id="fileInput" multiple accept=".pdf,.docx,.xlsx,.pptx,,.udf,.txt" class="d-none">
@@ -969,7 +950,7 @@ class FileUploadModal extends Component {
                                         <span class="visually-hidden">Loading...</span>
                                     </div>
                                     <h5 class="mb-2">Uploading Files...</h5>
-                                    <p class="text-center mb-0">Please wait for Doclink to process your files</p>
+                                    <p class="text-center mb-0">Please wait for ragchat to process your files</p>
                                     <p class="text-center text-secondary">This might take a moment depending on file size</p>
                                 </div>
                             </div>
@@ -1036,7 +1017,11 @@ class FileUploadModal extends Component {
         });
 
         driveButton.addEventListener('click', () => {
-            this.loadDrivePicker(); 
+            if (!window.googleSignIn && !this.isUploading) {
+                this.events.emit('warning', 'Please sign in with Google to use Drive');
+                return;
+            }
+            this.loadDrivePicker();
         });
 
         fileInput.addEventListener('change', () => {
@@ -1316,12 +1301,18 @@ class FileUploadModal extends Component {
     }
 
     createPicker() {
+
         if (this.currentPicker) {
             this.currentPicker.dispose();
             this.currentPicker = null;
         }
+
+        const accessToken = document.cookie
+            .split('; ')
+            .find(row => row.startsWith('drive_access_token='))
+            ?.split('=')[1];
     
-        if (!this.accessToken) {
+        if (!accessToken) {
             const alertModal = document.createElement('div');
             alertModal.className = 'alert-modal';
             alertModal.innerHTML = `
@@ -1356,23 +1347,28 @@ class FileUploadModal extends Component {
             return;
         }
         
+        const GOOGLE_API_KEY = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('google_api_key='))
+        ?.split('=')[1];
+
     
         const picker = new google.picker.PickerBuilder()
             .addView(google.picker.ViewId.DOCS)
-            .setOAuthToken(this.accessToken)  // This is all we need!
+            .setOAuthToken(accessToken)
+            .setDeveloperKey(GOOGLE_API_KEY)
             .enableFeature(google.picker.Feature.SUPPORT_DRIVES)
             .enableFeature(google.picker.Feature.MULTISELECT_ENABLED)
             .setCallback((data) => {
                 if (data[google.picker.Response.ACTION] === google.picker.Action.PICKED) {
                     const docs = data[google.picker.Response.DOCUMENTS];
-                    this.handleDriveSelection(docs);
+                    this.handleDriveSelection(docs);  // Pass token to handler
                 }
             })
             .build();
-            
         picker.setVisible(true);
         this.currentPicker = picker;
-    
+
         setTimeout(() => {
             const pickerFrame = document.querySelector('.picker-dialog-bg');
             const pickerDialog = document.querySelector('.picker-dialog');
@@ -1383,11 +1379,12 @@ class FileUploadModal extends Component {
                         el.remove();
                     }
                 });
-    
+
                 pickerFrame.style.zIndex = '10000';
                 pickerDialog.style.zIndex = '10001';
             }
         }, 0);
+
     }
 
     handleDriveSelection(files) {
@@ -1548,6 +1545,7 @@ class FileUploadModal extends Component {
         }
     }
 }
+
 
 class ChatManager extends Component {
     constructor() {
@@ -1884,7 +1882,7 @@ class ChatManager extends Component {
         const button = document.querySelector('.send-button');
         input.disabled = false;
         button.disabled = false;
-        input.placeholder = "Find your answer...";
+        input.placeholder = "Send message";
     }
 
     disableChat() {

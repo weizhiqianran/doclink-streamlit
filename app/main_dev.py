@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, JSONResponse
 
 import requests as http_requests
 import os
@@ -206,6 +206,36 @@ async def get_drive_token(request: Request):
         return {"accessToken": session_token}
     except Exception as e:
         raise HTTPException(status_code=401, detail=f"Invalid or expired token {e}")
+
+
+@app.get("/api/store_drive_token")
+async def store_drive_token(request: Request):
+    try:
+        body = await request.json()
+        token = body.get("token")
+
+        if not token:
+            raise HTTPException(status_code=400, detail="No token provided")
+
+        # Verify the token is valid
+        user_info = await verify_google_token(token)
+
+        response = JSONResponse({"success": True})
+
+        # Store the drive token in a cookie
+        response.set_cookie(
+            key="drive_access_token",
+            value=token,
+            httponly=True,
+            secure=False,  # Set to True in production
+            max_age=3600,
+            samesite="strict",
+        )
+
+        return response
+
+    except Exception as e:
+        raise HTTPException(status_code=401, detail=str(e))
 
 
 # Include other routes
