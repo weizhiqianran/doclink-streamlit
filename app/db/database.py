@@ -503,64 +503,53 @@ class Database:
             raise
 
     def upsert_session_info(self, user_id: str, session_id: str):
-        check_query = """
+        # First check if the session exists
+        check_session_query = """
         SELECT id FROM session_info 
         WHERE user_id = %s AND session_id = %s
         """
 
-        update_query = """
-        UPDATE session_info 
-        SET last_enterance = NOW(),
-            total_enterance = total_enterance + 1
-        WHERE user_id = %s AND session_id = %s
-        """
-
-        insert_query = """
-        INSERT INTO session_info (user_id, session_id, last_enterance, total_enterance)
-        VALUES (%s, %s, NOW(), 1)
-        """
-
-        try:
-            self.cursor.execute(check_query, (user_id, session_id))
-            exists = self.cursor.fetchone()
-
-            if exists:
-                self.cursor.execute(update_query, (user_id, session_id))
-            else:
-                self.cursor.execute(insert_query, (user_id, session_id))
-
-        except Exception as e:
-            self.conn.rollback()
-            raise e
-
-    def update_session_info(self, user_id: str, session_id: str):
+        # Query to get daily question count and user type
         query_get_daily_count = """
         SELECT sum(question_count), u.user_type
         FROM session_info s
         JOIN user_info u ON s.user_id = u.user_id
-        WHERE s.user_id = 'f7ac60c6-529c-4b41-998c-9b0448463486' 
-        AND s.created_at >= CURRENT_TIMESTAMP - INTERVAL '24 hours'AND s.created_at <= CURRENT_TIMESTAMP
+        WHERE s.user_id = %s 
+        AND s.created_at >= CURRENT_TIMESTAMP - INTERVAL '24 hours' AND s.created_at <= CURRENT_TIMESTAMP
         GROUP BY u.user_type;
         """
-        query = """
+
+        # Query to insert new session
+        insert_session_query = """
+        INSERT INTO session_info 
+        (user_id, session_id, question_count, total_enterance, last_enterance)
+        VALUES (%s, %s, 0, 1, CURRENT_TIMESTAMP)
+        RETURNING id
+        """
+
+        # Query to update existing session
+        update_question_query = """
         UPDATE session_info 
-        SET question_count = question_count + 1
+        SET question_count = question_count + 1,
+            last_enterance = CURRENT_TIMESTAMP
         WHERE user_id = %s AND session_id = %s
         RETURNING question_count
         """
+
         try:
+            # Check if session exists
+            self.cursor.execute(check_session_query, (user_id, session_id))
+            session_exists = self.cursor.fetchone()
+
+            # If session doesn't exist, create it
+            if not session_exists:
+                self.cursor.execute(insert_session_query, (user_id, session_id))
+                self.conn.commit()
+
+            # Get daily count and user type
             self.cursor.execute(query_get_daily_count, (user_id,))
             result = self.cursor.fetchall()
-
-            if not result:
-                # No questions today, get user type
-                self.cursor.execute(
-                    "SELECT user_type FROM user_info WHERE user_id = %s", (user_id,)
-                )
-                user_type = self.cursor.fetchone()[0]
-                daily_count = 0
-            else:
-                daily_count, user_type = result[0][0], result[0][1]
+            daily_count, user_type = result[0][0], result[0][1]
 
             # Check free user limits
             if user_type == "free" and daily_count >= 50:
@@ -570,8 +559,10 @@ class Database:
                     "question_count": daily_count,
                 }
 
-            self.cursor.execute(query, (user_id, session_id))
+            # Increment question count
+            self.cursor.execute(update_question_query, (user_id, session_id))
             question_count = self.cursor.fetchone()[0]
+            self.conn.commit()
 
             return {
                 "success": True,
@@ -580,6 +571,7 @@ class Database:
             }
         except Exception as e:
             self.conn.rollback()
+            print(f"Error updating session info: {str(e)}")
             raise e
 
     def insert_user_rating(
