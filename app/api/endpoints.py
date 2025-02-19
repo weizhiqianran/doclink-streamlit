@@ -264,7 +264,7 @@ async def generate_answer(
             )
 
         with Database() as db:
-            update_result = db.update_session_info(user_id=userID, session_id=sessionID)
+            update_result = db.upsert_session_info(user_id=userID, session_id=sessionID)
 
             if not update_result["success"]:
                 return JSONResponse(
