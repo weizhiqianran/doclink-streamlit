@@ -568,6 +568,7 @@ class Database:
                 "success": True,
                 "message": "success",
                 "question_count": question_count,
+                "daily_count": daily_count,
             }
         except Exception as e:
             self.conn.rollback()

@@ -310,6 +310,7 @@ async def generate_answer(
                 "resources": resources,
                 "resource_sentences": resource_sentences,
                 "question_count": update_result["question_count"],
+                "daily_count": update_result["daily_count"],
             },
             status_code=200,
         )
