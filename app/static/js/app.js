@@ -1721,13 +1721,14 @@ class ChatManager extends Component {
         // First process headers
         let formattedText = text.replace(/\[header\](.*?)\[\/header\]/g, '<div class="message-header">$1</div>');
         
-        // Process bold terms
-        formattedText = formattedText.replace(/\*\*(.*?)\*\*/g, '<strong class="message-bold">$1</strong>');
-        
         // Handle nested lists with proper indentation
         formattedText = formattedText.replace(/^-\s*(.*?)$/gm, '<div class="message-item">$1</div>');
         formattedText = formattedText.replace(/^\s{2}-\s*(.*?)$/gm, '<div class="message-item nested-1">$1</div>');
         formattedText = formattedText.replace(/^\s{4}-\s*(.*?)$/gm, '<div class="message-item nested-2">$1</div>');
+
+        // Process bold terms
+        formattedText = formattedText.replace(/\*\*(.*?)\*\*/g, '<strong class="message-bold">$1</strong>');
+        formattedText = formattedText.replace(/\[bold\](.*?)\[\/bold\]/g, '<strong class="message-bold">$1</strong>');
         
         return `<div class="message-content">${formattedText}</div>`;
       }
