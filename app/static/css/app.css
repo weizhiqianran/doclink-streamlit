@@ -18,6 +18,8 @@ body {
 }
 
 .top-header {
+  position: relative;
+  padding: 1rem;
   background: var(--sidebar-bg);
 }
 
@@ -145,11 +147,16 @@ body {
   font-size: 25px;
   font-weight: 500;
   margin-left: 0;
+  text-align: center;
+  margin: 0;
+  padding: 0 40px;
 }
 
 .menu-trigger {
   position: absolute;
   left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
   background: transparent;
   border: none;
   color: var(--primary-green);
@@ -158,12 +165,11 @@ body {
   border-radius: 8px;
   transition: all 0.3s ease;
   cursor: pointer;
-  z-index: 1050;
+  z-index: 1051;
 }
 
 .menu-trigger:hover {
   background: rgba(16, 185, 129, 0.1);
-  transform: scale(1.05);
 }
 
 .header-menu-button {
@@ -227,41 +233,27 @@ body {
 
 .sidebar-container {
   width: 294px;
-  height: 100%;
+  height: 100vh;
   position: fixed;
+  left: 0;
   top: 0;
-  left: -294px;
-  background: rgba(20, 25, 36, 0.9);
+  background: var(--sidebar-bg);
   z-index: 1050;
   transition: transform 0.3s ease;
 }
 
+.sidebar-container:not(.open) {
+  transform: translateX(-294px);
+}
+
 .sidebar-container.open {
-  transform: translateX(294px);
+  transform: translateX(0);
 }
 
 .sidebar-backdrop {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 1040;
-  opacity: 0;
-  visibility: hidden;
-  transition: all 0.3s ease;
-}
-
-.menu-hover-area {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 50px;
-  height: 80px;
-  z-index: 1059;
   display: none;
 }
+
 
 .sidebar-backdrop.show {
   opacity: 1;
@@ -270,8 +262,12 @@ body {
 
 .resources-container {
   width: 600px;
-  position: relative;
-  transition: transform 0.3s ease;
+  height: 100vh;
+  position: fixed;
+  right: 0;
+  top: 0;
+  background: var(--main-bg);
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .menu-button {
@@ -290,6 +286,34 @@ body {
   color: white;
   font-size: 20px;
   cursor: pointer;
+}
+
+.settings-icon-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--primary-green);
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 6px;
+  transition: background-color 0.3s ease;
+}
+
+.settings-icon-container:hover {
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.domain-selection-helper {
+  color: var(--primary-green);
+  font-size: 14px;
+  margin-top: 8px;
+  text-align: center;
+  opacity: 0.8;
+}
+
+.d-flex.vh-100 {
+  width: 100%;
+  overflow: hidden;
 }
 
 .open-file-btn {
@@ -1539,12 +1563,20 @@ body {
 }
 
 .chat-container {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
   flex: 1;
+  margin-left: 294px;
+  transition: margin-left 0.3s ease;
+  width: calc(100% - 894px);
   min-width: 0;
-  position: relative;
+}
+
+.chat-container.expanded {
+  margin-left: 0;
+}
+
+.chat-container.sidebar-closed {
+  margin-left: 0;
+  width: calc(100% - 600px);
 }
 
 .chat-messages {
@@ -2827,12 +2859,6 @@ textarea.form-control {
   }
 }
 
-@media (min-width: 992px) {
-  .menu-hover-area {
-    display: block;
-  }
-}
-
 @media (max-width: 991px) {
   .sidebar-container.open .menu-trigger .bi-list {
     transform: rotate(45deg);
@@ -2847,13 +2873,13 @@ textarea.form-control {
 }
 
 .resources-container {
-    position: fixed;
-    top: 0;
-    right: -610px;
-    width: 80%;
-    height: 100%;
-    transition: transform 0.3s ease;
-    z-index: 1050;
+  position: fixed;
+  top: 0;
+  right: -610px;
+  width: 80%;
+  height: 100%;
+  transition: transform 0.3s ease;
+  z-index: 1050;
 }
 
 .resources-container.show {

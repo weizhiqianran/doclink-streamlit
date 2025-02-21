@@ -1696,7 +1696,7 @@ class ChatManager extends Component {
                     <div class="spinner-border text-light" role="status">
                         <span class="visually-hidden">Loading...</span>
                     </div>
-                </div>
+                </div>  
             </div>
         `;
         this.messageContainer.appendChild(message);
@@ -1882,11 +1882,11 @@ class ChatManager extends Component {
 class Sidebar extends Component {
     constructor(domainManager) {
         const element = document.createElement('div');
-        element.className = 'sidebar-container';
+        element.className = 'sidebar-container open';
         super(element);
         
         this.domainManager = domainManager;
-        this.isOpen = false;
+        this.isOpen = true;
         this.timeout = null;
         this.selectedFiles = new Set();
         this.render();
@@ -1910,9 +1910,13 @@ class Sidebar extends Component {
                             <i class="bi bi-folder empty-folder"></i>
                             <span class="d-xl-block selected-domain-text">Unselected</span>
                         </div>
-                        <i class="bi bi-gear settings-icon"></i>
+                        <div class="settings-icon-container" title="Select Domain">
+                            <i class="bi bi-folder2-open"></i>
+                        </div>
                     </div>
-
+                     <p class="helper-text text-center" style="color: var(--primary-green)">
+                        Select a domain to start chatting with your documents
+                    </p>
                     <div class="file-list-container">
                         <div id="sidebarFileList" class="sidebar-files">
                         </div>
@@ -1922,7 +1926,7 @@ class Sidebar extends Component {
                             Add Sources
                         </button>
                         <p class="helper-text">
-                            To add first select on ⚙️
+                            Select your domain first
                         </p>
                     </div>
                 </div>
@@ -1964,66 +1968,29 @@ class Sidebar extends Component {
                 <div id="sidebar-seperator"></div>
             </div>
         `;
-
-        // Create backdrop
-        this.backdrop = document.createElement('div');
-        this.backdrop.className = 'sidebar-backdrop';
-        document.body.appendChild(this.backdrop);
     }
 
     setupEventListeners() {
         // Existing event listeners
         const settingsIcon = this.element.querySelector('.settings-icon');
+         if (settingsIcon) {
         settingsIcon.addEventListener('click', () => {
             this.events.emit('settingsClick');
         });
+        }
     
-        const fileMenuBtn = this.element.querySelector('.open-file-btn');
+        const fileMenuBtn = this.element.querySelector('.settings-icon-container');
         fileMenuBtn.addEventListener('click', () => {
+            console.log('clicked')
             this.events.emit('fileMenuClick');
         });
     
-        this.backdrop.addEventListener('click', () => {
-            this.toggle(false);
-        });
     
         // Add hover handlers for desktop
         const menuTrigger = document.querySelector('.menu-trigger');
-        if (window.innerWidth >= 992 && menuTrigger) {
-            // Menu trigger hover
-            if (menuTrigger) {
-                menuTrigger.addEventListener('mouseenter', () => {
-                    console.log('Menu trigger hover');
-                    clearTimeout(this.timeout);
-                    this.toggle(true);
-                });
-    
-                menuTrigger.addEventListener('mouseleave', () => {
-                    this.timeout = setTimeout(() => {
-                        if (!this.element.matches(':hover')) {
-                            this.toggle(false);
-                        }
-                    }, 300);
-                });
-            }
-
-            // Sidebar hover
-            this.element.addEventListener('mouseenter', () => {
-                console.log('Sidebar hover');
-                clearTimeout(this.timeout);
-                this.toggle(true);
-            });
-    
-            this.element.addEventListener('mouseleave', () => {
-                if (this.isModalOpen) return;  // Prevent closing if modal is open
-
-                this.timeout = setTimeout(() => {
-                    if (!document.querySelector('.menu-trigger')?.matches(':hover')) {
-                        this.toggle(false);
-                    }
-                }, 300);
-            });
-        }
+        menuTrigger?.addEventListener('click', () => {
+            this.toggle();
+        });
 
         this.events.on('modalOpen', () => {
             this.isModalOpen = true;
@@ -2050,7 +2017,6 @@ class Sidebar extends Component {
         // Handle window resize
         window.addEventListener('resize', () => {
             if (window.innerWidth >= 992) {
-                this.backdrop.classList.remove('show');
                 document.body.style.overflow = '';
                 const menuIcon = document.querySelector('.menu-trigger .bi-list');
                 if (menuIcon) {
@@ -2114,25 +2080,33 @@ class Sidebar extends Component {
         }
     }
 
-    toggle(force = null) {
-        this.isOpen = force !== null ? force : !this.isOpen;
+    toggle() {
+        this.isOpen = !this.isOpen;
         this.element.classList.toggle('open', this.isOpen);
-        this.backdrop.classList.toggle('show', this.isOpen);
-        document.body.style.overflow = this.isOpen ? 'hidden' : '';
+        
+        // Toggle chat container margin
+        const chatContainer = document.querySelector('.chat-container');
+        if (chatContainer) {
+            chatContainer.classList.toggle('sidebar-closed', !this.isOpen);
+        }
+
     }
 
     updateDomainSelection(domain) {
         const domainText = this.element.querySelector('.selected-domain-text');
         const folderIcon = this.element.querySelector('.bi-folder');
+        const helperText = this.element.querySelector('.helper-text');
         
         if (domain) {
             domainText.textContent = domain.name;
             domainText.title = domain.name;
             folderIcon.classList.remove('empty-folder');
+            helperText.style.display = 'none';
         } else {
-            domainText.textContent = 'Select Knowledge Base';
+            domainText.textContent = 'No Domain Selected';
             domainText.removeAttribute('title');
             folderIcon.classList.add('empty-folder');
+            helperText.style.display = 'block';
         }
     }
 
@@ -3146,6 +3120,7 @@ class App {
         });
 
         this.sidebar.events.on('fileMenuClick', () => {
+            console.log('clicked 2')
             const selectedDomain = this.domainManager.getSelectedDomain();
             if (!selectedDomain) {
                 this.events.emit('warning', 'Please select a domain first');
