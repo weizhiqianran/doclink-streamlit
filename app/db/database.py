@@ -81,10 +81,19 @@ class Database:
         LEFT JOIN file_info t2 ON t1.domain_id = t2.domain_id
         WHERE t1.domain_id IN %s
         """
+        query_get_daily_count = """
+        SELECT sum(question_count)
+        FROM session_info s
+        WHERE s.user_id = %s 
+        AND s.created_at >= CURRENT_TIMESTAMP - INTERVAL '24 hours' AND s.created_at <= CURRENT_TIMESTAMP;
+        """
 
         try:
             self.cursor.execute(query_get_user_info, (user_id,))
             user_info_data = self.cursor.fetchone()
+
+            self.cursor.execute(query_get_daily_count, (user_id,))
+            user_daily_count = self.cursor.fetchone()
 
             if not user_info_data:
                 return None, None
@@ -95,6 +104,7 @@ class Database:
                 "user_email": user_info_data[2],
                 "user_type": user_info_data[3],
                 "user_created_at": str(user_info_data[4]),
+                "user_daily_count": user_daily_count[0] if user_daily_count else 0,
             }
 
             self.cursor.execute(query_get_domain_ids, (user_id,))

@@ -3391,6 +3391,8 @@ class App {
             });
         }
 
+        window.app.profileLimitsModal.updateDailyCount(this.userData.user_info.user_daily_count);
+
         // Welcome operations
         const isFirstTime = window.serverData.isFirstTime === 'True';
         if (isFirstTime) {
