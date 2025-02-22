@@ -1924,7 +1924,7 @@ class Sidebar extends Component {
                             Add Sources
                         </button>
                         <p class="helper-text text-center" style="color: var(--primary-green)">
-                            Select a folder to start chatting
+                            Select a folder from 📁 to start chatting
                         </p>
                     </div>
                 </div>
