@@ -1910,13 +1910,11 @@ class Sidebar extends Component {
                             <i class="bi bi-folder empty-folder"></i>
                             <span class="d-xl-block selected-domain-text">Unselected</span>
                         </div>
-                        <div class="settings-icon-container" title="Select Domain">
+                        <div class="settings-icon" title="Select Domain">
                             <i class="bi bi-folder2-open"></i>
                         </div>
                     </div>
-                     <p class="helper-text text-center" style="color: var(--primary-green)">
-                        Select a domain to start chatting with your documents
-                    </p>
+
                     <div class="file-list-container">
                         <div id="sidebarFileList" class="sidebar-files">
                         </div>
@@ -1925,8 +1923,8 @@ class Sidebar extends Component {
                         <button class="open-file-btn">
                             Add Sources
                         </button>
-                        <p class="helper-text">
-                            Select your domain first
+                        <p class="helper-text text-center" style="color: var(--primary-green)">
+                            Select a folder to start chatting
                         </p>
                     </div>
                 </div>
@@ -1979,18 +1977,19 @@ class Sidebar extends Component {
         });
         }
     
-        const fileMenuBtn = this.element.querySelector('.settings-icon-container');
+        const fileMenuBtn = this.element.querySelector('.open-file-btn');
         fileMenuBtn.addEventListener('click', () => {
-            console.log('clicked')
             this.events.emit('fileMenuClick');
         });
     
     
         // Add hover handlers for desktop
         const menuTrigger = document.querySelector('.menu-trigger');
-        menuTrigger?.addEventListener('click', () => {
-            this.toggle();
-        });
+        if (menuTrigger) {
+            menuTrigger.addEventListener('click', () => {
+                this.toggle();
+            });
+        }
 
         this.events.on('modalOpen', () => {
             this.isModalOpen = true;
@@ -2088,6 +2087,14 @@ class Sidebar extends Component {
         const chatContainer = document.querySelector('.chat-container');
         if (chatContainer) {
             chatContainer.classList.toggle('sidebar-closed', !this.isOpen);
+
+            const messageContainer = document.querySelector('.message-container');
+            if (messageContainer) {
+                messageContainer.style.left = this.isOpen ? '294px' : '0';
+                messageContainer.style.width = this.isOpen ? 
+                    'calc(100% - 600px - 294px)' : 
+                    'calc(100% - 600px)';
+            }
         }
 
     }
@@ -3120,7 +3127,6 @@ class App {
         });
 
         this.sidebar.events.on('fileMenuClick', () => {
-            console.log('clicked 2')
             const selectedDomain = this.domainManager.getSelectedDomain();
             if (!selectedDomain) {
                 this.events.emit('warning', 'Please select a domain first');
