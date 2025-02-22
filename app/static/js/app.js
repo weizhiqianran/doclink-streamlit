@@ -1900,7 +1900,10 @@ class Sidebar extends Component {
                 <div class="top-header py-3 px-4">
                     <div class="d-flex align-items-center justify-content-between">
                         <div class="d-flex align-items-center gap-3">
-                            <h1 class="logo-text m-0 d-xl-block">Doclink</h1>
+                                <div class="logo-container">
+                                <img src="/static/favicon/apple-touch-icon.png" alt="Doclink" class="logo-image">
+                                <h1 class="logo-text">Doclink</h1>
+                            </div>
                         </div>
                     </div>
                 </div>
