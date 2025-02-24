@@ -370,14 +370,14 @@ class DomainSettingsModal extends Component {
                 <div class="modal-content">
                     <div class="domain-modal-wrapper">
                         <div class="domain-header">
-                            <h5>Select Knowledge Base</h5>
+                            <h5>Select Folder</h5>
                             <button type="button" class="close-button" data-bs-dismiss="modal">
                                 <i class="bi bi-x"></i>
                             </button>
                         </div>
                         <div class="limit-indicator mb-4">
                             <div class="d-flex justify-content-between align-items-center mb-2">
-                                <small class="text-secondary">Knowledge Base Limit</small>
+                                <small class="text-secondary">Folder Limit</small>
                                 <small class="text-secondary domains-count">0/3</small>
                             </div>
                             <div class="progress" style="height: 6px; background: rgba(255, 255, 255, 0.1);">
@@ -410,7 +410,7 @@ class DomainSettingsModal extends Component {
                 <div class="modal-dialog modal-dialog-centered modal-sm">
                     <div class="modal-content">
                         <div class="domain-modal-wrapper text-center">
-                            <h6 class="mb-3">Delete Knowledge Base?</h6>
+                            <h6 class="mb-3">Delete Folder?</h6>
                             <p class="text-secondary mb-4">Are you sure you want to delete this domain?</p>
                             <div class="d-flex gap-3">
                                 <button class="btn btn-outline-secondary flex-grow-1" data-bs-dismiss="modal">Cancel</button>
@@ -607,7 +607,7 @@ class DomainSettingsModal extends Component {
                     alertElement.innerHTML = `
                         <div class="alert-content">
                             <h5 class="alert-title">I can't do it...</h5>
-                            <p class="alert-message">Knowledge Base name must be 20 characters or less. Please try again with a shorter name!</p>
+                            <p class="alert-message">Folder name must be 20 characters or less. Please try again with a shorter name!</p>
                             <button class="alert-button" style="background-color: #10B981">Got it</button>
                         </div>
                     `;
@@ -646,7 +646,7 @@ class DomainSettingsModal extends Component {
                                 <div class="alert-icon">
                                     <i class="bi bi-exclamation-circle text-primary-green"></i>
                                 </div>
-                                <h5 class="alert-title">Knowledge Base Limit Reached</h5>
+                                <h5 class="alert-title">Folder Limit Reached</h5>
                                 <p class="alert-message">${result.message}</p>
                                 <div class="domain-count mt-3 text-secondary">
                                     <small>Domains Used: ${this.domainManager.getAllDomains().length}/3</small>
@@ -670,7 +670,7 @@ class DomainSettingsModal extends Component {
                         });
                         
                     } else {
-                        this.events.emit('warning', 'Failed to create knowledge base. Please try again.');
+                        this.events.emit('warning', 'Failed to create Folder. Please try again.');
                     }
                     inputCard.remove(); 
                 }
@@ -713,7 +713,7 @@ class DomainSettingsModal extends Component {
             const newName = input.value.trim();
             if (newName && newName !== currentName) {
                 if (newName.length > 20) {
-                    this.events.emit('warning', 'Knowledge Base name must be less than 20 characters');
+                    this.events.emit('warning', 'Folder name must be less than 20 characters');
                     return;
                 }
         
@@ -1539,7 +1539,7 @@ class ChatManager extends Component {
         container.innerHTML = `
             <textarea 
                 class="message-input" 
-                placeholder="Please select your knowledge base ⚙️"
+                placeholder="Please select your Folder ⚙️"
                 rows="1"
                 disabled
             ></textarea>
@@ -1709,8 +1709,8 @@ class ChatManager extends Component {
             <div class="chat-message ai">
                 <div class="message-bubble ai-bubble">
                     <div class="message-text">
-                        Please select a knowledge base to start chatting with your documents.
-                        Click the settings icon <i class="bi bi-gear"></i> to select a knowledge base.
+                        Please select a Folder to start chatting with your documents.
+                        Click the settings icon <i class="bi bi-gear"></i> to select a Folder.
                     </div>
                 </div>
             </div>
@@ -1870,7 +1870,7 @@ class ChatManager extends Component {
         const button = document.querySelector('.send-button');
         input.disabled = true;
         button.disabled = true;
-        input.placeholder = "Select your knowledge base to chat...";
+        input.placeholder = "Select your Folder to chat...";
     }
 
     clearDefaultMessage() {
@@ -2773,7 +2773,7 @@ class URLInputModal extends Component {
                                     required
                                 >
                                 <small class="text-secondary mt-2">
-                                    Enter the URL of the webpage you want to add to your knowledge base
+                                    Enter the URL of the webpage you want to add to your Folder
                                 </small>
                             </div>
 
@@ -2985,7 +2985,7 @@ class ProfileLimitsModal extends Component {
                             <div class="limit-indicator mb-3">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                     <div>
-                                        <small class="text-secondary d-block">Knowledge Bases</small>
+                                        <small class="text-secondary d-block">Folders</small>
                                         <small class="text-white-50">Number of domains you can create</small>
                                     </div>
                                     <small class="text-secondary domains-count">0/3</small>
@@ -3156,7 +3156,7 @@ class App {
             this.updateDomainCount();
             
             this.events.emit('message', {
-                text: `Successfully created knowledge base ${domainData.name}`,
+                text: `Successfully created Folder ${domainData.name}`,
                 type: 'success'
             });
         });
@@ -3192,13 +3192,13 @@ class App {
                     this.chatManager.enableChat();
                     
                     this.events.emit('message', {
-                        text: `Successfully switched to knowledge base ${domain.data.name}`,
+                        text: `Successfully switched to Folder ${domain.data.name}`,
                         type: 'success'
                     });
                 }
             } catch (error) {
                 this.events.emit('message', {
-                    text: 'Failed to select knowledge base',
+                    text: 'Failed to select Folder',
                     type: 'error'
                 });
             }
@@ -3227,7 +3227,7 @@ class App {
                 this.domainSettingsModal.updateDomainsList(this.domainManager.getAllDomains());
                 
                 this.events.emit('message', {
-                    text: `Successfully renamed knowledge base to ${newName}`,
+                    text: `Successfully renamed Folder to ${newName}`,
                     type: 'success'
                 });
             }
@@ -3259,7 +3259,7 @@ class App {
                 this.updateDomainCount();
 
                 this.events.emit('message', {
-                    text: 'Knowledge Base successfully deleted',
+                    text: 'Folder successfully deleted',
                     type: 'success'
                 });
             }
@@ -3381,7 +3381,7 @@ class App {
         const isFirstTime = window.serverData.isFirstTime === 'True';
         if (isFirstTime) {
             localStorage.setItem('firstTime', 0);
-            const firstTimeMsg = `[header]Welcome to Doclink${this.userData.user_info.user_name ? `, ${this.userData.user_info.user_name}` : ''}👋[/header]\nI've automatically set up your first knowledge base with helpful guide about using Doclink. You can always use this file to get any information about Doclink!\n[header]To get started[/header]\n- Ask any question about Doclink's features and capabilities \n- Try asking "What can Doclink do?" or "How do I organize my documents?"\n- The user guide has been uploaded to your first knowledge base\n- All answers will include source references\n\n[header]Quick Tips[/header]\n- Open & close navigation bar by hovering\n- Click ⚙️ to manage domains and documents\n- Upload files via "Add Sources" button after selecting a knowledge base\n- Check right panel for answer sources\n- Supports PDF, DOCX, Excel, PowerPoint, UDF and TXT formats\n- Create different domains for different topics\n- View highlighted source sections in answers\n- Use file checkboxes to control search scope`;
+            const firstTimeMsg = `[header]Welcome to Doclink${this.userData.user_info.user_name ? `, ${this.userData.user_info.user_name}` : ''}👋[/header]\nI've automatically set up your first Folder with helpful guide about using Doclink. You can always use this file to get any information about Doclink!\n[header]To get started[/header]\n- Ask any question about Doclink's features and capabilities \n- Try asking "What can Doclink do?" or "How do I organize my documents?"\n- The user guide has been uploaded to your first Folder\n- All answers will include source references\n\n[header]Quick Tips[/header]\n- Open & close navigation bar by hovering\n- Click ⚙️ to manage domains and documents\n- Upload files via "Add Sources" button after selecting a Folder\n- Check right panel for answer sources\n- Supports PDF, DOCX, Excel, PowerPoint, UDF and TXT formats\n- Create different domains for different topics\n- View highlighted source sections in answers\n- Use file checkboxes to control search scope`;
             this.chatManager.addMessage(firstTimeMsg, 'ai');
 
             const domains = this.domainManager.getAllDomains();

@@ -180,7 +180,7 @@ window.deleteDomain = async function deleteDomain(domainId) {
 
         return {
             success: true,
-            message: "Knowledge Base deleted"
+            message: "Folder deleted"
         };
 
     } catch (error) {
