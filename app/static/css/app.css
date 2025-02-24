@@ -161,7 +161,6 @@ input, textarea, select {
   background: var(--primary-dark);
 }
 
-/* Icons and Indicators */
 .empty-folder,
 .sidebar-file-list-icon,
 .file-icon i,
@@ -169,7 +168,6 @@ input, textarea, select {
   color: var(--primary-blue);
 }
 
-/* Borders and Highlights */
 .checkbox-label,
 .domain-card.selected,
 .new-domain-input-card,
@@ -177,26 +175,22 @@ input, textarea, select {
   border-color: var(--primary-blue);
 }
 
-/* Background Effects */
 .upload-icon-wrapper:hover,
 .new-domain-button:hover,
 .menu-item:hover {
   background: var(--primary-light);
 }
 
-/* Text Colors */
 .user-status,
 .premium-link,
 .text-primary-blue {
   color: var(--primary-blue);
 }
 
-/* Progress Bars */
 .progress-bar {
   background: var(--primary-blue);
 }
 
-/* Specific Component Updates */
 .plan-badge {
   background-color: var(--primary-light);
   color: var(--primary-blue);
@@ -222,18 +216,15 @@ input, textarea, select {
   border-color: var(--primary-blue);
 }
 
-/* File Upload States */
 .file-item.uploaded {
   border-color: var(--primary-blue);
   background: var(--primary-light);
 }
 
-/* Modal Elements */
 .domain-name {
   color: var(--primary-blue);
 }
 
-/* Resource Section */
 .bullet-number {
   border-color: var(--primary-blue);
 }
@@ -244,7 +235,6 @@ input, textarea, select {
     rgba(65, 105, 225, 0.1) 100%);
 }
 
-/* Animation Updates */
 @keyframes colorPulse {
   0% {
     background-position: 100% 0;
@@ -261,13 +251,11 @@ input, textarea, select {
     transparent 50%);
 }
 
-/* Hover States */
 .menu-trigger:hover,
 .resources-trigger:hover {
   background: var(--primary-light);
 }
 
-/* Form Elements */
 .form-control:focus {
   border-color: var(--primary-blue);
 }
