@@ -441,7 +441,7 @@ class DomainSettingsModal extends Component {
                             <h6 class="mb-3">I can't do it...</h6>
                             <p class="text-secondary mb-4" id="domainInfoMessage"></p>
                             <div class="d-flex justify-content-center">
-                                <button class="btn" style="background-color: #10B981; color: #fff;" data-bs-dismiss="modal">Got it</button>
+                                <button class="btn" style="background-color: #4169E1;; color: #fff;" data-bs-dismiss="modal">Got it</button>
                             </div>
                         </div>
                     </div>
@@ -608,7 +608,7 @@ class DomainSettingsModal extends Component {
                         <div class="alert-content">
                             <h5 class="alert-title">I can't do it...</h5>
                             <p class="alert-message">Folder name must be 20 characters or less. Please try again with a shorter name!</p>
-                            <button class="alert-button" style="background-color: #10B981">Got it</button>
+                            <button class="alert-button" style="background-color: #4169E1;">Got it</button>
                         </div>
                     `;
     
@@ -1681,7 +1681,7 @@ class ChatManager extends Component {
         if (!headerTitle) return;
         
         if (domainName) {
-            headerTitle.innerHTML = `Chat with <span style="color: #10B981; font-size: 1.1em;">${domainName}</span>`;
+            headerTitle.innerHTML = `Chat with <span style="color: #4169E1; font-size: 1.1em;">${domainName}</span>`;
         } else {
             headerTitle.textContent = 'Chat';
         }
@@ -1926,7 +1926,7 @@ class Sidebar extends Component {
                         <button class="open-file-btn">
                             Add Sources
                         </button>
-                        <p class="helper-text text-center" style="color: var(--primary-green)">
+                        <p class="helper-text text-center" style="color: var(--primary-blue)">
                             Select a folder from 📁 to start chatting
                         </p>
                     </div>
@@ -2157,7 +2157,7 @@ class Sidebar extends Component {
         fileItem.innerHTML = `
             <div class="d-flex align-items-center w-100">
                 <div class="icon-container">
-                    <i class="bi ${icon} file-icon sidebar-file-list-icon" style="color:#10B981"></i>
+                    <i class="bi ${icon} file-icon sidebar-file-list-icon" style="color: #4169E1"></i>
                     <button class="delete-file-btn">
                         <i class="bi bi-trash"></i>
                     </button>
@@ -2977,7 +2977,7 @@ class ProfileLimitsModal extends Component {
                                     <small class="text-secondary sources-count">0/20</small>
                                 </div>
                                 <div class="progress" style="height: 6px; background: rgba(255, 255, 255, 0.1);">
-                                    <div class="progress-bar bg-primary-green" style="width: 0%"></div>
+                                    <div class="progress-bar bg-primary-blue" style="width: 0%"></div>
                                 </div>
                             </div>
 
