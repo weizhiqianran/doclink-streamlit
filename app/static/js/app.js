@@ -3079,8 +3079,7 @@ class ProfileLimitsModal extends Component {
     setupEventListeners() {
         const upgradeButton = this.element.querySelector('.upgrade-button');
         upgradeButton?.addEventListener('click', () => {
-            this.hide();
-            window.app.premiumModal.show();
+            this.events.emit('upgradeClick');
         });
     }
 
@@ -3337,6 +3336,10 @@ class App {
             this.premiumModal.show();
         });
 
+        this.profileLimitsModal.events.on('upgradeClick', () => {
+            this.initiateCheckout();
+        });
+
         // Logout event
         const logoutItem = this.sidebar.element.querySelector('.logout-item');
         logoutItem?.addEventListener('click', (e) => {
@@ -3409,6 +3412,28 @@ class App {
                 'ai'
             );
         }
+    }
+
+    // Initial Checkout
+    initiateCheckout() {
+        const variantId = '701687';
+        
+        // Get current user email
+        const userEmail = this.userData?.user_info?.user_email || '';
+        
+        // Construct the checkout URL for Lemon Squeezy
+        const checkoutUrl = `https://checkout.lemonsqueezy.com/buy/${variantId}?` + 
+            new URLSearchParams({
+                email: userEmail,
+                custom: JSON.stringify({
+                    user_id: window.serverData.userId
+                })
+            }).toString();
+        
+        console.log("Redirecting to checkout:", checkoutUrl);
+        
+        // Redirect to checkout
+        window.location.href = checkoutUrl;
     }
 }
 
