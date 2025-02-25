@@ -635,6 +635,128 @@ class Database:
             self.conn.rollback()
             raise e
 
+    def update_user_subscription(
+        self,
+        lemon_squeezy_customer_id: str,
+        subscription_id: str,
+        status: str,
+        ends_at: str = None,
+    ):
+        try:
+            query = """
+                SELECT user_id FROM user_info 
+                WHERE lemon_squeezy_customer_id = %s
+                LIMIT 1
+            """
+            self.cursor.execute(query, (lemon_squeezy_customer_id,))
+            result = self.cursor.fetchone()
+
+            if result:
+                # Update existing user
+                user_id = result[0]
+                query = """
+                    UPDATE user_info 
+                    SET subscription_status = %s,
+                        subscription_id = %s,
+                        subscription_ends_at = %s,
+                        last_payment_at = CURRENT_TIMESTAMP
+                    WHERE user_id = %s
+                """
+                self.cursor.execute(query, (status, subscription_id, ends_at, user_id))
+                rows_affected = self.cursor.rowcount
+                return rows_affected > 0
+            else:
+                # This is for handling webhooks before we've updated the user record
+                logger.warning(
+                    f"Received webhook for unknown customer: {lemon_squeezy_customer_id}"
+                )
+                return False
+        except Exception as e:
+            logger.error(f"Error updating subscription: {str(e)}")
+            self.conn.rollback()  # Added rollback to prevent transaction errors
+            return False
+
+    def update_subscription_status(
+        self, subscription_id: str, status: str, ends_at: str = None
+    ):
+        """Update a user's subscription status based on subscription_id"""
+        try:
+            query = """
+                UPDATE user_info 
+                SET subscription_status = %s,
+                    subscription_ends_at = %s,
+                    last_payment_at = CURRENT_TIMESTAMP
+                WHERE subscription_id = %s
+                RETURNING user_id
+            """
+            self.cursor.execute(query, (status, ends_at, subscription_id))
+            result = self.cursor.fetchone()
+
+            if result:
+                logger.info(
+                    f"Updated subscription status for user {result[0]} to {status}"
+                )
+                return True
+            else:
+                logger.warning(f"No user found with subscription_id: {subscription_id}")
+                return False
+        except Exception as e:
+            logger.error(f"Error updating subscription status: {str(e)}")
+            self.conn.rollback()
+            return False
+
+    def link_user_to_lemon_squeezy(self, user_id: str, lemon_squeezy_customer_id: str):
+        try:
+            query = """
+                UPDATE user_info 
+                SET lemon_squeezy_customer_id = %s
+                WHERE user_id = %s
+                RETURNING user_id
+            """
+            self.cursor.execute(query, (lemon_squeezy_customer_id, user_id))
+            result = self.cursor.fetchone()
+
+            if not result:
+                logger.warning(
+                    f"User {user_id} not found when linking to Lemon Squeezy"
+                )
+                return False
+
+            return True
+        except Exception as e:
+            logger.error(f"Error linking user to Lemon Squeezy: {str(e)}")
+            self.conn.rollback()
+            return False
+
+    def check_subscription_access(self, user_id: str):
+        """Check if user has premium access"""
+        try:
+            query = """
+                SELECT subscription_status, subscription_ends_at 
+                FROM user_info 
+                WHERE user_id = %s
+            """
+            self.cursor.execute(query, (user_id,))
+            result = self.cursor.fetchone()
+
+            if not result:
+                return False
+
+            status = result[0]
+            ends_at = result[1]
+
+            if status == "premium":
+                if ends_at is None or ends_at > datetime.now():
+                    return True
+
+            elif status == "cancelled" and ends_at and ends_at > datetime.now():
+                return True
+
+            return False
+        except Exception as e:
+            logger.error(f"Error checking subscription access: {str(e)}")
+            return False
+
 
 if __name__ == "__main__":
     with Database() as db:
