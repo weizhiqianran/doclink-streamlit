@@ -1,24 +1,23 @@
 :root {
   --primary-blue: #4169E1;        
-  --primary-dark: #1D4ED8;         
-  --primary-light: rgba(37, 99, 235, 0.1);
+  --primary-dark: rgba(16, 163, 127, 1);         
+  --primary-light: rgba(16, 163, 127, 0.3);
   --sidebar-bg: #141924;
   --main-bg: #0b0f17;
 
-  --primary-color: var(--primary-blue);
+  --primary-color: var(--primary-dark);
 
   /* Typography Scale */
-  --font-size-xxl: 24px;   
-  --font-size-xl: 22px;     
-  --font-size-lg: 20px;     
-  --font-size-md: 16px;    
-  --font-size-sm: 14px;     
-  --font-size-xs: 12px;
+  --font-size-xl: 22px;
+  --font-size-lg: 20px;
+  --font-size-md: 16px;
+  --font-size-sm: 14px;
 
   /* Font Weights */
   --font-regular: 400;
   --font-medium: 500;
-  --font-semibold: 600;
+  --font-semibold: 800;
+  --font-bold: 1000;
 
   /* Line Heights */
   --line-height-tight: 1.2;   
@@ -81,8 +80,8 @@ h3, .h3 {
 }
 
 .message-header {
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-medium);
+  font-size: var(--font-size-xl);
+  font-weight: var( --font-bold);
   line-height: var(--line-height-normal);
 }
 
@@ -165,7 +164,7 @@ input, textarea, select {
 .sidebar-file-list-icon,
 .file-icon i,
 .bullet-number {
-  color: var(--primary-blue);
+  color: var(--primary-dark);
 }
 
 .checkbox-label,
@@ -207,10 +206,6 @@ input, textarea, select {
   border-color: var(--primary-blue);
 }
 
-.message-header {
-  color: var(--primary-blue);
-  border-bottom: 1px solid rgba(65, 105, 225, 0.2);
-}
 
 .alert-icon i {
   border-color: var(--primary-blue);
@@ -247,7 +242,7 @@ input, textarea, select {
 .premium-link {
   background: linear-gradient(90deg,
     transparent 0%,
-    var(--primary-blue) 100%,
+    var(--primary-dark) 100%,
     transparent 50%);
 }
 
@@ -257,7 +252,7 @@ input, textarea, select {
 }
 
 .form-control:focus {
-  border-color: var(--primary-blue);
+  border-color: var(--primary-dark);
 }
 
 .sidebar,
@@ -291,13 +286,12 @@ input, textarea, select {
   gap: 16px;
 }
 
-/* Updated loading overlay styles */
 .upload-loading-overlay {
   margin-top: 16px;
   background: rgba(33, 33, 33, 0.95);
   border-radius: 12px;
   padding: 24px;
-  display: none; /* Will be changed to flex when active */
+  display: none; 
   flex-direction: column;
   align-items: center;
   border: 1px solid rgba(16, 185, 129, 0.2);
@@ -1003,10 +997,12 @@ input, textarea, select {
 }
 
 .message-content {
-  font-size: 14px;
+  font-size: var(--font-size-sm);
+  color: rgb(221, 225, 231);
   line-height: 1.3;
   width: 100%;
   overflow-x: auto;
+  font-weight: 300;
 }
 
 .message-content pre,
@@ -1019,6 +1015,9 @@ input, textarea, select {
   margin: 8px 0;
   padding-left: 24px;
   position: relative;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-semibold);
+  color: rgb(221, 225, 231);
 }
 
 .message-item:before {
@@ -1029,24 +1028,28 @@ input, textarea, select {
 
 .message-item.nested-1 {
   margin-left: 24px;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-medium);
 }
 
 .message-item.nested-2 {
   margin-left: 48px;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-medium);
 }
 
 .message-header {
-  color: var(--primary-dark);
-  font-size: 16px;
-  font-weight: 600;
+  color: rgba(255, 255, 255,1);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-bold);
   margin: 12px 0 8px 0;
   padding-bottom: 4px;
   border-bottom: 1px solid rgba(16, 185, 129, 0.2);
 }
 
 .message-bold {
-  color: var(--primary-dark);
-  font-weight: 500;
+  color: rgba(255, 255, 255,1);
+  font-weight: var(--font-semibold);
 }
 
 .message-substance {
@@ -1705,8 +1708,6 @@ input, textarea, select {
   justify-content: center;
   border-radius: 8px;
   margin-right: 8px;
-
-
 }
 
 .sidebar-file-list-icon {
@@ -1954,7 +1955,7 @@ input, textarea, select {
 .sidebar-file-item .file-icon {
   font-size: 1.25rem;
   margin-right: 0.75rem;
-  color: var(--primary-blue);
+  color: var(--primary-dark);
   flex-shrink: 0;
 }
 
@@ -3355,7 +3356,7 @@ textarea.form-control {
 
 .url-input-btn {
   background: transparent;
-  border: 1px solid rgba(16, 83, 185, 0.5);
+  border: 1px solid var(--primary-dark);
   color: var(--primary-dark);
   padding: 12px;
   border-radius: 8px;

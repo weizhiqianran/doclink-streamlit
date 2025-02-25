@@ -1681,7 +1681,7 @@ class ChatManager extends Component {
         if (!headerTitle) return;
         
         if (domainName) {
-            headerTitle.innerHTML = `Chat with <span style="color: #4169E1; font-size: 1.1em;">${domainName}</span>`;
+            headerTitle.innerHTML = `Chat with <span style="color: var(--primary-dark); font-size: 1.1em;">${domainName}</span>`;
         } else {
             headerTitle.textContent = 'Chat';
         }
@@ -1926,7 +1926,7 @@ class Sidebar extends Component {
                         <button class="open-file-btn">
                             Add Sources
                         </button>
-                        <p class="helper-text text-center" style="color: var(--primary-blue)">
+                        <p class="helper-text text-center" style="color: var(--primary-dark)">
                             Select a folder from 📁 to start chatting
                         </p>
                     </div>
@@ -2157,7 +2157,7 @@ class Sidebar extends Component {
         fileItem.innerHTML = `
             <div class="d-flex align-items-center w-100">
                 <div class="icon-container">
-                    <i class="bi ${icon} file-icon sidebar-file-list-icon" style="color: #4169E1"></i>
+                    <i class="bi ${icon} file-icon sidebar-file-list-icon" style="color: var(--primary-dark)"></i>
                     <button class="delete-file-btn">
                         <i class="bi bi-trash"></i>
                     </button>
