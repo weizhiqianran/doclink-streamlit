@@ -396,9 +396,9 @@ input, textarea, select {
 }
 
 .logo-container {
-    display: flex;
-    align-items: center;
-    gap: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .header-title {
@@ -1029,13 +1029,13 @@ input, textarea, select {
 .message-item.nested-1 {
   margin-left: 24px;
   font-size: var(--font-size-sm);
-  font-weight: var(--font-medium);
+  font-weight: var(--font-regular);
 }
 
 .message-item.nested-2 {
   margin-left: 48px;
   font-size: var(--font-size-sm);
-  font-weight: var(--font-medium);
+  font-weight: var(--font-regular);
 }
 
 .message-header {
@@ -3417,5 +3417,5 @@ textarea.form-control {
 }
 
 .add-url-btn:not(:disabled):hover {
-  background: #0da271;
+  background: var(--primary-dark);
 }
