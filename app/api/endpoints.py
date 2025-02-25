@@ -1,15 +1,18 @@
 from fastapi import APIRouter, UploadFile, HTTPException, Request, Query, File, Form
+from fastapi.responses import JSONResponse
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload
-from fastapi.responses import JSONResponse
 from datetime import datetime
+
 import os
 import logging
 import uuid
 import base64
 import psycopg2
 import io
+import hmac
+import hashlib
 
 from .core import Processor
 from .core import Authenticator
@@ -722,6 +725,179 @@ async def logout(request: Request):
         raise HTTPException(
             content={"message": f"Failed logout, error: {e}"}, status_code=500
         )
+
+
+@router.post("/webhooks/lemon-squeezy")
+async def handle_webhook(request: Request):
+    try:
+        # Get the raw request body
+        body = await request.body()
+        payload = await request.json()
+
+        # Get the signature from the header
+        signature = request.headers.get("X-Signature")
+
+        # Skip signature verification in test mode
+        if not payload.get("meta", {}).get("test_mode", False):
+            webhook_secret = os.getenv("LEMON_SQUEEZY_WEBHOOK_SECRET")
+            expected_signature = hmac.new(
+                webhook_secret.encode(), body, hashlib.sha256
+            ).hexdigest()
+
+            if not hmac.compare_digest(signature, expected_signature):
+                raise HTTPException(status_code=401, detail="Invalid signature")
+
+        event_name = payload.get("meta", {}).get("event_name")
+        logger.info(f"Received webhook event: {event_name}")
+
+        if event_name == "subscription_created":
+            return await handle_subscription_created(payload)
+        elif event_name == "subscription_updated":
+            return await handle_subscription_updated(payload)
+        elif event_name == "subscription_cancelled":
+            return await handle_subscription_cancelled(payload)
+        elif event_name == "subscription_resumed":
+            return await handle_subscription_resumed(payload)
+        elif event_name == "subscription_expired":
+            return await handle_subscription_expired(payload)
+
+        return JSONResponse(status_code=200, content={"message": "Webhook received"})
+
+    except Exception as e:
+        logger.error(f"Webhook error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+async def handle_subscription_created(payload):
+    try:
+        data = payload.get("data", {}).get("attributes", {})
+        customer_id = data.get("customer_id")
+        subscription_id = data.get("subscription_id")
+        status = data.get("status")
+        ends_at = data.get("ends_at")
+
+        with Database() as db:
+            db.update_user_subscription(
+                lemon_squeezy_customer_id=customer_id,
+                subscription_id=subscription_id,
+                status="premium",
+                ends_at=ends_at,
+            )
+            db.conn.commit()
+
+        return JSONResponse(
+            status_code=200, content={"message": "Subscription created successfully"}
+        )
+
+    except Exception as e:
+        logger.error(f"Error handling subscription creation: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+async def handle_subscription_updated(payload):
+    try:
+        data = payload.get("data", {}).get("attributes", {})
+        subscription_id = data.get("subscription_id")
+        status = data.get("status")
+        ends_at = data.get("ends_at")
+
+        # Map Lemon Squeezy status to our status
+        mapped_status = "premium"
+        if status in ["on_trial", "active"]:
+            mapped_status = "premium"
+        elif status in ["past_due", "unpaid"]:
+            mapped_status = "past_due"
+        else:
+            mapped_status = status
+
+        with Database() as db:
+            query = """
+                UPDATE user_info 
+                SET subscription_status = %s,
+                    subscription_ends_at = %s,
+                    last_payment_at = CURRENT_TIMESTAMP
+                WHERE subscription_id = %s
+            """
+            db.cursor.execute(query, (mapped_status, ends_at, subscription_id))
+            db.conn.commit()
+
+        return JSONResponse(
+            status_code=200, content={"message": "Subscription updated successfully"}
+        )
+    except Exception as e:
+        logger.error(f"Error handling subscription update: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+async def handle_subscription_cancelled(payload):
+    try:
+        data = payload.get("data", {}).get("attributes", {})
+        subscription_id = data.get("subscription_id")
+        ends_at = data.get("ends_at")
+
+        with Database() as db:
+            success = db.update_subscription_status(
+                subscription_id=subscription_id, status="cancelled", ends_at=ends_at
+            )
+            if not success:
+                logger.warning(
+                    f"Failed to update subscription {subscription_id} to cancelled"
+                )
+            db.conn.commit()
+
+        return JSONResponse(
+            status_code=200, content={"message": "Subscription cancelled successfully"}
+        )
+    except Exception as e:
+        logger.error(f"Error handling subscription cancellation: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+async def handle_subscription_resumed(payload):
+    try:
+        data = payload.get("data", {}).get("attributes", {})
+        subscription_id = data.get("subscription_id")
+        ends_at = data.get("ends_at")
+
+        with Database() as db:
+            query = """
+                UPDATE user_info 
+                SET subscription_status = 'premium',
+                    subscription_ends_at = %s
+                WHERE subscription_id = %s
+            """
+            db.cursor.execute(query, (ends_at, subscription_id))
+            db.conn.commit()
+
+        return JSONResponse(
+            status_code=200, content={"message": "Subscription resumed successfully"}
+        )
+    except Exception as e:
+        logger.error(f"Error handling subscription resumption: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+async def handle_subscription_expired(payload):
+    try:
+        data = payload.get("data", {}).get("attributes", {})
+        subscription_id = data.get("subscription_id")
+
+        with Database() as db:
+            query = """
+                UPDATE user_info 
+                SET subscription_status = 'expired',
+                    subscription_ends_at = CURRENT_TIMESTAMP
+                WHERE subscription_id = %s
+            """
+            db.cursor.execute(query, (subscription_id,))
+            db.conn.commit()
+
+        return JSONResponse(
+            status_code=200, content={"message": "Subscription expired successfully"}
+        )
+    except Exception as e:
+        logger.error(f"Error handling subscription expiration: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 # local functions
