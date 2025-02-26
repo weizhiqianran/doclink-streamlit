@@ -3422,13 +3422,7 @@ class App {
         const userEmail = this.userData?.user_info?.user_email || '';
         
         // Construct the checkout URL for Lemon Squeezy
-        const checkoutUrl = `https://checkout.lemonsqueezy.com/buy/${variantId}?` + 
-            new URLSearchParams({
-                email: userEmail,
-                custom: JSON.stringify({
-                    user_id: window.serverData.userId
-                })
-            }).toString();
+        const checkoutUrl = 'https://doclinkio.lemonsqueezy.com/buy/68bb1cb7-529b-496a-9075-d03abdc91006';
         
         console.log("Redirecting to checkout:", checkoutUrl);
         
