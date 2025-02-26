@@ -1543,13 +1543,9 @@ class ChatManager extends Component {
                 rows="1"
                 disabled
             ></textarea>
-            <button class="send-button" disabled>
-                <i class="bi bi-send send-icon"></i>
-            </button>
         `;
     
         const input = container.querySelector('.message-input');
-        const sendButton = container.querySelector('.send-button');
         
         input.addEventListener('keypress', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
@@ -1558,9 +1554,6 @@ class ChatManager extends Component {
             }
         });
     
-        sendButton.addEventListener('click', () => {
-            this.handleSendMessage(input);
-        });
     }
 
     async handleSendMessage(input) {
@@ -1867,9 +1860,7 @@ class ChatManager extends Component {
     disableChat() {
         this.element.classList.add('chat-disabled'); 
         const input = document.querySelector('.message-input');
-        const button = document.querySelector('.send-button');
         input.disabled = true;
-        button.disabled = true;
         input.placeholder = "Select your Folder to chat...";
     }
 
