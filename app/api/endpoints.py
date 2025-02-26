@@ -737,15 +737,14 @@ async def handle_webhook(request: Request):
         # Get the signature from the header
         signature = request.headers.get("X-Signature")
 
-        # Skip signature verification in test mode
-        if not payload.get("meta", {}).get("test_mode", False):
-            webhook_secret = os.getenv("LEMON_SQUEEZY_WEBHOOK_SECRET")
-            expected_signature = hmac.new(
-                webhook_secret.encode(), body, hashlib.sha256
-            ).hexdigest()
+        # Signature verification
+        webhook_secret = os.getenv("LEMON_SQUEEZY_WEBHOOK_SECRET")
+        expected_signature = hmac.new(
+            webhook_secret.encode(), body, hashlib.sha256
+        ).hexdigest()
 
-            if not hmac.compare_digest(signature, expected_signature):
-                raise HTTPException(status_code=401, detail="Invalid signature")
+        if not hmac.compare_digest(signature, expected_signature):
+            raise HTTPException(status_code=401, detail="Invalid signature")
 
         event_name = payload.get("meta", {}).get("event_name")
         logger.info(f"Received webhook event: {event_name}")
@@ -772,16 +771,17 @@ async def handle_subscription_created(payload):
     try:
         data = payload.get("data", {}).get("attributes", {})
         customer_id = data.get("customer_id")
-        subscription_id = data.get("subscription_id")
-        status = data.get("status")
-        ends_at = data.get("ends_at")
+        customer_email = data.get("user_email")
+        subscription_id = data.get("first_subscription_item").get("subscription_id")
+        renews_at = data.get("renews_at")
 
         with Database() as db:
             db.update_user_subscription(
+                user_email=customer_email,
                 lemon_squeezy_customer_id=customer_id,
                 subscription_id=subscription_id,
                 status="premium",
-                ends_at=ends_at,
+                renews_at=renews_at,
             )
             db.conn.commit()
 

@@ -637,32 +637,32 @@ class Database:
 
     def update_user_subscription(
         self,
+        user_email: str,
         lemon_squeezy_customer_id: str,
         subscription_id: str,
         status: str,
-        ends_at: str = None,
+        renews_at: str = None,
     ):
         try:
-            query = """
+            query_get_user = """
                 SELECT user_id FROM user_info 
-                WHERE lemon_squeezy_customer_id = %s
+                WHERE user_email = %s
                 LIMIT 1
             """
-            self.cursor.execute(query, (lemon_squeezy_customer_id,))
+            self.cursor.execute(query_get_user, (user_email,))
             result = self.cursor.fetchone()
 
             if result:
                 # Update existing user
                 user_id = result[0]
-                query = """
-                    UPDATE user_info 
-                    SET subscription_status = %s,
-                        subscription_id = %s,
-                        subscription_ends_at = %s,
-                        last_payment_at = CURRENT_TIMESTAMP
-                    WHERE user_id = %s
+                query_insert_premium_user = """
+                INSERT INTO premium_user_info (lemon_squeezy_customer_id, user_id, subscription_id, subscription_renews_at, last_payment_at)
+                VALUES (%s, %s, %s, %s, %s)
                 """
-                self.cursor.execute(query, (status, subscription_id, ends_at, user_id))
+                self.cursor.execute(
+                    query_insert_premium_user,
+                    (status, subscription_id, ends_at, user_id),
+                )
                 rows_affected = self.cursor.rowcount
                 return rows_affected > 0
             else:
