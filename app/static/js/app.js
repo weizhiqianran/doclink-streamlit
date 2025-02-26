@@ -1751,7 +1751,6 @@ class ChatManager extends Component {
             const rows = tableContent
                 .trim()
                 .split('\n')
-                .slice(1)
                 .filter(row => {
                     const cleanRow = row.replace(/[|\s-]/g, '');
                     return cleanRow.length > 0;
@@ -1851,9 +1850,7 @@ class ChatManager extends Component {
     enableChat() {
         this.element.classList.remove('chat-disabled');
         const input = document.querySelector('.message-input');
-        const button = document.querySelector('.send-button');
         input.disabled = false;
-        button.disabled = false;
         input.placeholder = "Send message";
     }
 
