@@ -6,14 +6,17 @@ CREATE TABLE IF NOT EXISTS user_info (
     user_surname VARCHAR(50) NOT NULL,
     user_email VARCHAR(100) UNIQUE NOT NULL,
     user_type VARCHAR(20) DEFAULT 'free',
-    is_active BOOLEAN DEFAULT TRUE,
-    is_first_subscription BOOLEAN DEFAULT TRUE,
     picture_url VARCHAR(255),
     user_created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+);
+
+CREATE TABLE IF NOT EXISTS premium_user_info (
+    lemon_squeezy_customer_id VARCHAR(255) NOT NULL,
+    user_id UUID PRIMARY KEY,
     subscription_id VARCHAR(255),
-    subscription_ends_at TIMESTAMP,
-    subscription_status VARCHAR(20) DEFAULT 'free',
-    last_payment_at TIMESTAMP
+    subscription_renews_at TIMESTAMP,
+    last_payment_at TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES user_info(user_id)
 );
 
 CREATE TABLE IF NOT EXISTS user_feedback (
