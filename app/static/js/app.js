@@ -1724,88 +1724,112 @@ class ChatManager extends Component {
         formattedText = formattedText.replace(/\[bold\](.*?)\[\/bold\]/g, '<strong class="message-bold">$1</strong>');
         
         return `<div class="message-content">${formattedText}</div>`;
-      }
+    }
 
-      convertMarkdownToHtmlTable(content) {
+    convertMarkdownToHtmlTable(content) {
         if (!content.includes('|')) {
             return content;
         }
     
-        const tableRegex = /\|[^\|]+(?:\|[^\|]+)*\|/g;
-        let lastIndex = 0;
         let segments = [];
-        let match;
-    
-        tableRegex.lastIndex = 0;
         
-        while ((match = tableRegex.exec(content)) !== null) {
-            if (match.index > lastIndex) {
-                const textContent = content.substring(lastIndex, match.index).trim();
-                if (textContent) {
-                    segments.push(`<div class="description-content">${textContent}</div>`);
+
+        const startsWithTable = content.trimStart().startsWith('|');
+        
+        if (startsWithTable) {
+            const tableEndIndex = findTableEndIndex(content);
+            if (tableEndIndex > 0) {
+                const tableContent = content.substring(0, tableEndIndex).trim();
+                segments.push(processTableContent(tableContent));
+                
+                if (tableEndIndex < content.length) {
+                    const remainingText = content.substring(tableEndIndex).trim();
+                    if (remainingText) {
+                        segments.push(convertMarkdownToHtmlTable(remainingText));
+                    }
+                }
+            } else {
+                segments.push(processTableContent(content));
+            }
+        } else {
+            const tableRegex = /(\|[^\n]+\|(?:\r?\n\|[^\n]+\|)*)/g;
+            let lastIndex = 0;
+            let match;
+            
+            while ((match = tableRegex.exec(content)) !== null) {
+                if (match.index > lastIndex) {
+                    const textContent = content.substring(lastIndex, match.index).trim();
+                    if (textContent) {
+                        segments.push(`<div class="description-content">${textContent}</div>`);
+                    }
+                }
+                
+                segments.push(processTableContent(match[0]));
+                lastIndex = match.index + match[0].length;
+            }
+            
+            if (lastIndex < content.length) {
+                const remainingText = content.substring(lastIndex).trim();
+                if (remainingText) {
+                    segments.push(`<div class="description-content">${remainingText}</div>`);
+                }
+            }
+        }
+        
+        return segments.join('');
+        
+        function findTableEndIndex(text) {
+            const lines = text.split('\n');
+            let lineIndex = 0;
+            
+            for (let i = 0; i < lines.length; i++) {
+                lineIndex += lines[i].length + 1;
+                if (!lines[i].trimStart().startsWith('|')) {
+                    return lineIndex - 1;
                 }
             }
             
-            const tableContent = match[0];
-    
-            const rows = tableContent
-                .trim()
-                .split('\n')
-                .filter(row => {
-                    const cleanRow = row.replace(/[|\s-]/g, '');
-                    return cleanRow.length > 0;
-                });
-    
+            return -1;
+        }
+        
+        function processTableContent(tableContent) {
+            const rows = tableContent.split(/\r?\n/).filter(row => row.trim() && row.includes('|'));
+            
             let htmlTable = '<div class="table-wrapper"><table class="resource-table">';
+            let hasSeparatorRow = rows.some(row => 
+                row.replace(/[\|\-:\s]/g, '').length === 0
+            );
             
             rows.forEach((row, rowIndex) => {
-                const cells = row
-                    .split('|')
-                    .filter(cell => cell.trim())
-                    .map(cell => {
-                        const cleanCell = cell.trim();
-                            if (cleanCell.match(/^-+$/)) return '';
-                            return cleanCell
-                             // Handle any type of subscript (letter followed by number)
-                             .replace(/\s+/g, ' ')
-                             // Handle numeric values with units
-                             .replace(/(\d+\.?\d*)\s*([A-Za-z²³/]+)/, '<span class="numeric">$1</span> <span class="unit">$2</span>')
-                             // Handle row identifiers
-                             .replace(/^\(([i\d]+)\)/, '<span class="identifier">($1)</span>');
-                    });
-                    
+                if (row.replace(/[\|\-:\s]/g, '').length === 0) return;
+                
+                const cells = [];
+                let cellMatch;
+                const cellRegex = /\|(.*?)(?=\||$)/g;
+                
+                while ((cellMatch = cellRegex.exec(row + '|')) !== null) {
+                    if (cellMatch[1] !== undefined) {
+                        cells.push(cellMatch[1].trim());
+                    }
+                }
+                
+                if (cells.length === 0) return;
+                
                 htmlTable += '<tr>';
                 cells.forEach(cell => {
-                    if (!cell) return;
-                    const cellTag = rowIndex === 0 ? 'th' : 'td';
-                    const className = [];
+                    const isHeader = (rowIndex === 0 && !hasSeparatorRow) || 
+                                   (rowIndex === 0 && hasSeparatorRow);
+                    const cellTag = isHeader ? 'th' : 'td';
                     
-                    if (cell.includes('class="numeric"') || !isNaN(cell.replace(/[^\d.-]/g, ''))) {
-                        className.push('align-right');
-                    }
-                    
-                    if (cell.includes('class="identifier"')) {
-                        className.push('indent-cell');
-                    }
-                    htmlTable += `<${cellTag}${className.length ? ` class="${className.join(' ')}"` : ''}>${cell}</${cellTag}>`;
+                    htmlTable += `<${cellTag} class="align-left">${cell}</${cellTag}>`;
                 });
                 htmlTable += '</tr>';
             });
             
             htmlTable += '</table></div>';
-            segments.push(htmlTable);
-            lastIndex = match.index + match[0].length;
+            return htmlTable;
         }
-        
-        if (lastIndex < content.length) {
-            const remainingText = content.substring(lastIndex).trim();
-            if (remainingText) {
-                segments.push(`<div class="description-content">${remainingText}</div>`);
-                }
-            }
-        
-        return segments.join('');
-        }
+    }
 
     updateResources(resources, sentences) {
         const container = document.querySelector('.resources-list');
@@ -2282,7 +2306,6 @@ class Sidebar extends Component {
     }
 
     getFileIcon(extension) {
-        console.log(extension)
         const iconMap = {
             pdf: 'bi-file-pdf',
             docx: 'bi-file-word',

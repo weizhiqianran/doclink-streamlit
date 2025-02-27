@@ -2513,8 +2513,8 @@ input, textarea, select {
   background-color: rgba(255, 255, 255, 0.051);
 }
 
-.resource-table .align-right {
-  text-align: right;
+.resource-table .align-left {
+  text-align: left;
 }
 
 .resource-table .indent-cell {
