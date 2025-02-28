@@ -527,6 +527,17 @@ input, textarea, select {
   border-left: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+mark {
+  background-color: rgba(16, 185, 129, 0.3);
+  border-radius: 4px;
+  padding: 1px 2px;
+  color: #fff;
+  font-weight: normal;
+  border-bottom: 1px dotted rgba(16, 185, 129, 0.4);
+  text-shadow: none;
+  transition: all 0.2s ease;
+}
+
 .menu-button {
   color: var(--primary-dark);
   font-size: 24px;
