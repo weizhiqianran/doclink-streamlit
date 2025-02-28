@@ -2124,10 +2124,6 @@ class Sidebar extends Component {
                                 <i class="bi bi-person-circle"></i>
                                 Profile
                             </div>
-                            <div class="menu-item">
-                                <i class="bi bi-gear"></i>
-                                Settings
-                            </div>
                             <div class="menu-divider"></div>
                             <div class="menu-item logout-item">
                                 <i class="bi bi-box-arrow-right"></i>
