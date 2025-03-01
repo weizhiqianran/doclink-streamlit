@@ -3280,8 +3280,15 @@ class App {
         const userEmail = this.sidebar.element.querySelector('.user-email');
         const userAvatar = this.sidebar.element.querySelector('.user-avatar');
         
-        userEmail.textContent = this.userData.user_info.user_email;
-        userAvatar.textContent = this.userData.user_info.user_name[0].toUpperCase();
+        userEmail.textContent = this.userData.user_info.user_email; 
+        
+        if (this.userData.user_info.user_picture_url && this.userData.user_info.user_picture_url !== "null") {
+            userAvatar.innerHTML = `<img src="${this.userData.user_info.user_picture_url}" alt="${this.userData.user_info.user_name}" class="user-avatar-img">`;
+            userAvatar.classList.add('has-image');
+        } else {
+            userAvatar.textContent = this.userData.user_info.user_name[0].toUpperCase();
+            userAvatar.classList.remove('has-image');
+        }
     }
 
     updateSourcesCount(count) {
