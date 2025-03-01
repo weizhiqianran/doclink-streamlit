@@ -2449,6 +2449,17 @@ class Sidebar extends Component {
         window.app.updateSourcesCount(this.selectedFiles.size);
     }
 
+    updatePlanBadge(userType) {
+        const planBadge = this.element.querySelector('.plan-badge');
+        if (planBadge) {
+            if (userType === 'premium') {
+                planBadge.textContent = 'Premium Plan';
+            } else {
+                planBadge.textContent = 'Free Plan';
+            }
+        }
+    }
+
     hideDeleteConfirmations() {
         this.element.querySelectorAll('.delete-confirm-actions').forEach(actions => {
             actions.classList.remove('show');
@@ -3196,6 +3207,17 @@ class ProfileLimitsModal extends Component {
     updateLimits() {
         const domains = this.domainManager.getAllDomains();
         let totalSources = 0;
+        const userType = window.app?.userData?.user_info?.user_type || 'free';
+        const upgradeButton = this.element.querySelector('.upgrade-section');
+
+        // Show/hide upgrade button based on user type
+        if (upgradeButton) {
+            if (userType === 'premium') {
+                upgradeButton.style.display = 'none';
+            } else {
+                upgradeButton.style.display = 'block';
+            }
+        }
 
         domains.forEach(domain => {
             if (domain.fileCount) {
@@ -3203,13 +3225,16 @@ class ProfileLimitsModal extends Component {
             }
         });
         
-        this.updateProgressBar('sources', totalSources, 20);
-
-        const domainCount = domains.length;
-        this.updateProgressBar('domains', domainCount, 3);
-
-        this.updateProgressBar('questions', this.dailyQuestionsCount, 50);
-
+        if (userType === 'free') {
+            this.updateProgressBar('sources', totalSources, 10);
+            this.updateProgressBar('domains', domains.length, 3);
+            this.updateProgressBar('questions', this.dailyQuestionsCount, 10);
+        } else if (userType === 'premium') {
+            this.updateProgressBar('sources', totalSources, 100);
+            this.updateProgressBar('domains', domains.length, 20);
+            this.updateProgressBar('questions', this.dailyQuestionsCount, 200);
+        }
+        
     }
 
     updateDailyCount(count) {
@@ -3280,7 +3305,7 @@ class App {
         const userEmail = this.sidebar.element.querySelector('.user-email');
         const userAvatar = this.sidebar.element.querySelector('.user-avatar');
         
-        userEmail.textContent = this.userData.user_info.user_email; 
+        userEmail.textContent = this.userData.user_info.user_email;
         
         if (this.userData.user_info.user_picture_url && this.userData.user_info.user_picture_url !== "null") {
             userAvatar.innerHTML = `<img src="${this.userData.user_info.user_picture_url}" alt="${this.userData.user_info.user_name}" class="user-avatar-img">`;
@@ -3289,6 +3314,8 @@ class App {
             userAvatar.textContent = this.userData.user_info.user_name[0].toUpperCase();
             userAvatar.classList.remove('has-image');
         }
+
+        this.sidebar.updatePlanBadge(this.userData.user_info.user_type);
     }
 
     updateSourcesCount(count) {
@@ -3539,6 +3566,8 @@ class App {
         this.domainSettingsModal.updateDomainsList(
             this.domainManager.getAllDomains()
         );
+
+        window.user_type = this.userData.user_type
 
         // Add sidebar to DOM
         document.body.appendChild(this.sidebar.element);
