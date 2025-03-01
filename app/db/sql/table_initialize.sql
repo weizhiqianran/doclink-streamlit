@@ -12,9 +12,8 @@ CREATE TABLE IF NOT EXISTS user_info (
 CREATE TABLE IF NOT EXISTS premium_user_info (
     lemon_squeezy_customer_id VARCHAR(255) NOT NULL,
     user_id UUID PRIMARY KEY,
-    subscription_id VARCHAR(255),
-    subscription_renews_at TIMESTAMP,
-    last_payment_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    receipt_url VARCHAR,
+    payment_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES user_info(user_id)
 );
 

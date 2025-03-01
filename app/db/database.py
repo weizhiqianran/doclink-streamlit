@@ -406,6 +406,12 @@ class Database:
                     "message": "Free users can only create up to 3 domains. Upgrade account to create more domains!",
                 }
 
+            elif user_type == "premium" and domain_count >= 20:
+                return {
+                    "success": False,
+                    "message": "Premium users can only create up to 20 domains. Upgrade account to create more domains!",
+                }
+
             query_insert = """
             INSERT INTO domain_info (user_id, domain_id, domain_name, domain_type)
             VALUES (%s, %s, %s, %s)
@@ -455,10 +461,15 @@ class Database:
             user_id = file_info_batch[0][0]
             file_count, user_type = self.get_user_total_file_count(user_id)
 
-            if user_type == "free" and file_count + len(file_info_batch) > 20:
+            if user_type == "free" and file_count + len(file_info_batch) > 10:
                 return {
                     "success": False,
-                    "message": f"Free users can only have 20 total files. You currently have {file_count} files across all domains. Upgrade to add more!",
+                    "message": f"Free users can only have 10 total files. You currently have {file_count} files across all domains. Upgrade to add more!",
+                }
+            elif user_type == "premium" and file_count + len(file_info_batch) > 100:
+                return {
+                    "success": False,
+                    "message": f"Premium users can only have 100 total files. You currently have {file_count} files across all domains",
                 }
 
             self._insert_file_info_batch(file_info_batch)
@@ -552,10 +563,10 @@ class Database:
             daily_count, user_type = result[0][0], result[0][1]
 
             # Check free user limits
-            if user_type == "free" and daily_count >= 50:
+            if user_type == "free" and daily_count >= 10:
                 return {
                     "success": False,
-                    "message": "Daily question limit reached for free users. Please try again tomorrow or upgrade your plan!",
+                    "message": "Daily question limit reached for free user. Please try again tomorrow or upgrade your plan!",
                     "question_count": daily_count,
                 }
 
@@ -635,12 +646,11 @@ class Database:
             self.conn.rollback()
             raise e
 
-    def create_user_subscription(
+    def update_user_subscription(
         self,
         user_email: str,
         lemon_squeezy_customer_id: str,
-        subscription_id: str,
-        renews_at: str = None,
+        receipt_url: str,
     ):
         try:
             query_get_user = """
@@ -655,12 +665,12 @@ class Database:
                 # Insert user into the premium table
                 user_id = result[0]
                 query_insert_premium_user = """
-                INSERT INTO premium_user_info (lemon_squeezy_customer_id, user_id, subscription_id, subscription_renews_at)
-                VALUES (%s, %s, %s, %s)
+                INSERT INTO premium_user_info (lemon_squeezy_customer_id, user_id, receipt_url)
+                VALUES (%s, %s, %s)
                 """
                 self.cursor.execute(
                     query_insert_premium_user,
-                    (lemon_squeezy_customer_id, user_id, subscription_id, renews_at),
+                    (lemon_squeezy_customer_id, user_id, receipt_url),
                 )
 
                 # Update user info within the user_info table
@@ -681,87 +691,6 @@ class Database:
         except Exception as e:
             logger.error(f"Error updating subscription: {str(e)}")
             self.conn.rollback()  # Added rollback to prevent transaction errors
-            return False
-
-    def update_subscription_status(
-        self, subscription_id: str, status: str, ends_at: str = None
-    ):
-        """Update a user's subscription status based on subscription_id"""
-        try:
-            query = """
-                UPDATE user_info 
-                SET subscription_status = %s,
-                    subscription_ends_at = %s,
-                    last_payment_at = CURRENT_TIMESTAMP
-                WHERE subscription_id = %s
-                RETURNING user_id
-            """
-            self.cursor.execute(query, (status, ends_at, subscription_id))
-            result = self.cursor.fetchone()
-
-            if result:
-                logger.info(
-                    f"Updated subscription status for user {result[0]} to {status}"
-                )
-                return True
-            else:
-                logger.warning(f"No user found with subscription_id: {subscription_id}")
-                return False
-        except Exception as e:
-            logger.error(f"Error updating subscription status: {str(e)}")
-            self.conn.rollback()
-            return False
-
-    def link_user_to_lemon_squeezy(self, user_id: str, lemon_squeezy_customer_id: str):
-        try:
-            query = """
-                UPDATE user_info 
-                SET lemon_squeezy_customer_id = %s
-                WHERE user_id = %s
-                RETURNING user_id
-            """
-            self.cursor.execute(query, (lemon_squeezy_customer_id, user_id))
-            result = self.cursor.fetchone()
-
-            if not result:
-                logger.warning(
-                    f"User {user_id} not found when linking to Lemon Squeezy"
-                )
-                return False
-
-            return True
-        except Exception as e:
-            logger.error(f"Error linking user to Lemon Squeezy: {str(e)}")
-            self.conn.rollback()
-            return False
-
-    def check_subscription_access(self, user_id: str):
-        """Check if user has premium access"""
-        try:
-            query = """
-                SELECT subscription_status, subscription_ends_at 
-                FROM user_info 
-                WHERE user_id = %s
-            """
-            self.cursor.execute(query, (user_id,))
-            result = self.cursor.fetchone()
-
-            if not result:
-                return False
-
-            status = result[0]
-            ends_at = result[1]
-
-            if status == "premium":
-                if ends_at is None or ends_at > datetime.now():
-                    return True
-
-            elif status == "cancelled" and ends_at and ends_at > datetime.now():
-                return True
-
-            return False
-        except Exception as e:
-            logger.error(f"Error checking subscription access: {str(e)}")
             return False
 
 
