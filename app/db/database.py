@@ -635,12 +635,11 @@ class Database:
             self.conn.rollback()
             raise e
 
-    def update_user_subscription(
+    def create_user_subscription(
         self,
         user_email: str,
         lemon_squeezy_customer_id: str,
         subscription_id: str,
-        status: str,
         renews_at: str = None,
     ):
         try:
@@ -653,18 +652,26 @@ class Database:
             result = self.cursor.fetchone()
 
             if result:
-                # Update existing user
+                # Insert user into the premium table
                 user_id = result[0]
                 query_insert_premium_user = """
-                INSERT INTO premium_user_info (lemon_squeezy_customer_id, user_id, subscription_id, subscription_renews_at, last_payment_at)
-                VALUES (%s, %s, %s, %s, %s)
+                INSERT INTO premium_user_info (lemon_squeezy_customer_id, user_id, subscription_id, subscription_renews_at)
+                VALUES (%s, %s, %s, %s)
                 """
                 self.cursor.execute(
                     query_insert_premium_user,
-                    (status, subscription_id, ends_at, user_id),
+                    (lemon_squeezy_customer_id, user_id, subscription_id, renews_at),
                 )
-                rows_affected = self.cursor.rowcount
-                return rows_affected > 0
+
+                # Update user info within the user_info table
+                query_update_user_info = """
+                    UPDATE user_info 
+                    SET user_type = %s
+                    WHERE user_id = %s
+                    RETURNING user_id
+                """
+                self.cursor.execute(query_update_user_info, ("premium", user_id))
+                return
             else:
                 # This is for handling webhooks before we've updated the user record
                 logger.warning(

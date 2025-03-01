@@ -776,11 +776,10 @@ async def handle_subscription_created(payload):
         renews_at = data.get("renews_at")
 
         with Database() as db:
-            db.update_user_subscription(
+            db.create_user_subscription(
                 user_email=customer_email,
                 lemon_squeezy_customer_id=customer_id,
                 subscription_id=subscription_id,
-                status="premium",
                 renews_at=renews_at,
             )
             db.conn.commit()
