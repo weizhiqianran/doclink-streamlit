@@ -3183,7 +3183,7 @@ class ProfileLimitsModal extends Component {
                                         <small class="text-secondary d-block">Daily Questions</small>
                                         <small class="text-white-50">Resets daily at midnight UTC</small>
                                     </div>
-                                    <small class="text-secondary questions-count">0/50</small>
+                                    <small class="text-secondary questions-count">0/10</small>
                                 </div>
                                 <div class="progress" style="height: 6px; background: rgba(255, 255, 255, 0.1);">
                                     <div class="progress-bar bg-primary-green" style="width: 0%"></div>
@@ -3237,7 +3237,7 @@ class ProfileLimitsModal extends Component {
             this.updateProgressBar('questions', this.dailyQuestionsCount, 10);
         } else if (userType === 'premium') {
             this.updateProgressBar('sources', totalSources, 100);
-            this.updateProgressBar('domains', domains.length, 10);
+            this.updateProgressBar('domains', domains.length, 20);
         }
         
     }
