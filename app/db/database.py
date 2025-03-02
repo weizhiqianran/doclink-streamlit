@@ -417,6 +417,12 @@ class Database:
                     "message": "Free users can only create up to 3 domains. Upgrade account to create more domains!",
                 }
 
+            elif user_type == "premium" and domain_count >= 20:
+                return {
+                    "success": False,
+                    "message": "Premium users can only create up to 20 domains. Upgrade account to create more domains!",
+                }
+
             query_insert = """
             INSERT INTO domain_info (user_id, domain_id, domain_name, domain_type)
             VALUES (%s, %s, %s, %s)
@@ -466,10 +472,15 @@ class Database:
             user_id = file_info_batch[0][0]
             file_count, user_type = self.get_user_total_file_count(user_id)
 
-            if user_type == "free" and file_count + len(file_info_batch) > 20:
+            if user_type == "free" and file_count + len(file_info_batch) > 10:
                 return {
                     "success": False,
-                    "message": f"Free users can only have 20 total files. You currently have {file_count} files across all domains. Upgrade to add more!",
+                    "message": f"Free users can only have 10 total files. You currently have {file_count} files across all domains. Upgrade to add more!",
+                }
+            elif user_type == "premium" and file_count + len(file_info_batch) > 200:
+                return {
+                    "success": False,
+                    "message": f"Premium users can only have 100 total files. You currently have {file_count} files across all domains",
                 }
 
             self._insert_file_info_batch(file_info_batch)
@@ -563,10 +574,10 @@ class Database:
             daily_count, user_type = result[0][0], result[0][1]
 
             # Check free user limits
-            if user_type == "free" and daily_count >= 50:
+            if user_type == "free" and daily_count >= 10:
                 return {
                     "success": False,
-                    "message": "Daily question limit reached for free users. Please try again tomorrow or upgrade your plan!",
+                    "message": "Daily question limit reached for free user. Please try again tomorrow or upgrade your plan!",
                     "question_count": daily_count,
                 }
 
@@ -646,6 +657,53 @@ class Database:
         except DatabaseError as e:
             self.conn.rollback()
             raise e
+
+    def update_user_subscription(
+        self,
+        user_email: str,
+        lemon_squeezy_customer_id: str,
+        receipt_url: str,
+    ):
+        try:
+            query_get_user = """
+                SELECT user_id FROM user_info 
+                WHERE user_email = %s
+                LIMIT 1
+            """
+            self.cursor.execute(query_get_user, (user_email,))
+            result = self.cursor.fetchone()
+
+            if result:
+                # Insert user into the premium table
+                user_id = result[0]
+                query_insert_premium_user = """
+                INSERT INTO premium_user_info (lemon_squeezy_customer_id, user_id, receipt_url)
+                VALUES (%s, %s, %s)
+                """
+                self.cursor.execute(
+                    query_insert_premium_user,
+                    (lemon_squeezy_customer_id, user_id, receipt_url),
+                )
+
+                # Update user info within the user_info table
+                query_update_user_info = """
+                    UPDATE user_info 
+                    SET user_type = %s
+                    WHERE user_id = %s
+                    RETURNING user_id
+                """
+                self.cursor.execute(query_update_user_info, ("premium", user_id))
+                return
+            else:
+                # This is for handling webhooks before we've updated the user record
+                logger.warning(
+                    f"Received webhook for unknown customer: {lemon_squeezy_customer_id}"
+                )
+                return False
+        except Exception as e:
+            logger.error(f"Error updating subscription: {str(e)}")
+            self.conn.rollback()  # Added rollback to prevent transaction errors
+            return False
 
 
 if __name__ == "__main__":

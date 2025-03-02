@@ -1,15 +1,18 @@
 from fastapi import APIRouter, UploadFile, HTTPException, Request, Query, File, Form
+from fastapi.responses import JSONResponse, RedirectResponse, StreamingResponse
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload
-from fastapi.responses import JSONResponse, RedirectResponse, StreamingResponse
 from datetime import datetime
+
 import os
 import logging
 import uuid
 import base64
 import psycopg2
 import io
+import hmac
+import hashlib
 
 from .core import Processor
 from .core import Authenticator
@@ -751,6 +754,51 @@ async def logout(request: Request):
         raise HTTPException(
             content={"message": f"Failed logout, error: {e}"}, status_code=500
         )
+
+
+@router.post("/webhooks/lemon-squeezy")
+async def handle_webhook(request: Request):
+    try:
+        # Get the raw request body
+        body = await request.body()
+        payload = await request.json()
+
+        # Get the signature from the header
+        signature = request.headers.get("X-Signature")
+
+        # Signature verification
+        webhook_secret = os.getenv("LEMON_SQUEEZY_WEBHOOK_SECRET")
+        expected_signature = hmac.new(
+            webhook_secret.encode(), body, hashlib.sha256
+        ).hexdigest()
+
+        if not hmac.compare_digest(signature, expected_signature):
+            raise HTTPException(status_code=401, detail="Invalid signature")
+
+        event_name = payload.get("meta", {}).get("event_name")
+        if not event_name == "order_created":
+            return JSONResponse(
+                status_code=400, content={"message": "Wrong event came!"}
+            )
+
+        # Upgrade user to the premium limits
+        data = payload.get("data", {}).get("attributes", {})
+        customer_id = data.get("customer_id")
+        customer_email = data.get("user_email")
+        receipt_url = data.get("urls").get("receipt")
+
+        with Database() as db:
+            db.update_user_subscription(
+                user_email=customer_email,
+                lemon_squeezy_customer_id=customer_id,
+                receipt_url=receipt_url,
+            )
+            db.conn.commit()
+        return JSONResponse(status_code=200, content={"message": "Webhook received"})
+
+    except Exception as e:
+        logger.error(f"Webhook error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 # local functions

@@ -4,10 +4,17 @@ CREATE TABLE IF NOT EXISTS user_info (
     user_name VARCHAR(50) NOT NULL,
     user_surname VARCHAR(50) NOT NULL,
     user_email VARCHAR(100) UNIQUE NOT NULL,
-    user_type VARCHAR(20) DEFAULT 'user',
-    is_active BOOLEAN DEFAULT TRUE,
+    user_type VARCHAR(20) DEFAULT 'free',
     picture_url VARCHAR(255),
     user_created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS premium_user_info (
+    lemon_squeezy_customer_id VARCHAR(255) NOT NULL,
+    user_id UUID PRIMARY KEY,
+    receipt_url VARCHAR,
+    payment_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES user_info(user_id)
 );
 
 CREATE TABLE IF NOT EXISTS user_feedback (
