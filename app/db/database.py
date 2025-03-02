@@ -574,7 +574,7 @@ class Database:
             daily_count, user_type = result[0][0], result[0][1]
 
             # Check free user limits
-            if user_type == "free" and daily_count >= 100:
+            if user_type == "free" and daily_count >= 10:
                 return {
                     "success": False,
                     "message": "Daily question limit reached for free user. Please try again tomorrow or upgrade your plan!",
