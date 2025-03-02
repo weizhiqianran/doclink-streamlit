@@ -466,7 +466,7 @@ class Database:
                     "success": False,
                     "message": f"Free users can only have 10 total files. You currently have {file_count} files across all domains. Upgrade to add more!",
                 }
-            elif user_type == "premium" and file_count + len(file_info_batch) > 100:
+            elif user_type == "premium" and file_count + len(file_info_batch) > 200:
                 return {
                     "success": False,
                     "message": f"Premium users can only have 100 total files. You currently have {file_count} files across all domains",
