@@ -1604,7 +1604,7 @@ class ChatManager extends Component {
                             <h5 class="alert-title">Daily Limit Reached</h5>
                             <p class="alert-message">${response.message}</p>
                             <div class="usage-count mt-3">
-                                <small>Questions Used Today: 50/50</small>
+                                <small>Questions Used Today: 10/10</small>
                             </div>
                             <button class="alert-button">Got it</button>
                         </div>
