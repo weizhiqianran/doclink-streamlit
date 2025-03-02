@@ -3608,17 +3608,7 @@ class App {
 
     // Initial Checkout
     initiateCheckout() {
-        const variantId = '701687';
-        
-        // Get current user email
-        const userEmail = this.userData?.user_info?.user_email || '';
-        
-        // Construct the checkout URL for Lemon Squeezy
         const checkoutUrl = 'https://doclinkio.lemonsqueezy.com/buy/68bb1cb7-529b-496a-9075-d03abdc91006';
-        
-        console.log("Redirecting to checkout:", checkoutUrl);
-        
-        // Redirect to checkout
         window.location.href = checkoutUrl;
     }
 }
