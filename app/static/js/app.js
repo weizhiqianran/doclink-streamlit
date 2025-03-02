@@ -2281,12 +2281,12 @@ class Sidebar extends Component {
         if (domain) {
             domainText.textContent = domain.name;
             domainText.title = domain.name;
-            folderIcon.classList.remove('empty-folder');
+            folderIcon.className = 'bi bi-folder empty-folder';
             helperText.style.display = 'none';
         } else {
             domainText.textContent = 'No Domain Selected';
             domainText.removeAttribute('title');
-            folderIcon.classList.add('empty-folder');
+            folderIcon.className = 'bi bi-folder empty-folder';
             helperText.style.display = 'block';
         }
     }
