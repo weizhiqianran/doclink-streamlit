@@ -370,7 +370,7 @@ class DomainSettingsModal extends Component {
                 <div class="modal-content">
                     <div class="domain-modal-wrapper">
                         <div class="domain-header">
-                            <h5>Select Folder</h5>
+                            <h5>Select folder</h5>
                             <button type="button" class="close-button" data-bs-dismiss="modal">
                                 <i class="bi bi-x"></i>
                             </button>
@@ -410,7 +410,7 @@ class DomainSettingsModal extends Component {
                 <div class="modal-dialog modal-dialog-centered modal-sm">
                     <div class="modal-content">
                         <div class="domain-modal-wrapper text-center">
-                            <h6 class="mb-3">Delete Folder?</h6>
+                            <h6 class="mb-3">Delete folder?</h6>
                             <p class="text-secondary mb-4">Are you sure you want to delete this domain?</p>
                             <div class="d-flex gap-3">
                                 <button class="btn btn-outline-secondary flex-grow-1" data-bs-dismiss="modal">Cancel</button>
@@ -670,7 +670,7 @@ class DomainSettingsModal extends Component {
                         });
                         
                     } else {
-                        this.events.emit('warning', 'Failed to create Folder. Please try again.');
+                        this.events.emit('warning', 'Failed to create folder. Please try again.');
                     }
                     inputCard.remove(); 
                 }
@@ -885,7 +885,7 @@ class FileUploadModal extends Component {
                     <div class="domain-modal-wrapper">
                         <div class="modal-header border-0 d-flex align-items-center">
                             <div>
-                                <h6 class="mb-0">Selected Domain: <span class="domain-name text-primary-green text-truncate"></span></h6>
+                                <h6 class="mb-0">Selected Folder: <span class="domain-name text-primary-green text-truncate"></span></h6>
                             </div>
                             <button type="button" class="close-button" data-bs-dismiss="modal">
                                 <i class="bi bi-x"></i>
@@ -1850,8 +1850,8 @@ class ChatManager extends Component {
             <div class="chat-message ai">
                 <div class="message-bubble ai-bubble">
                     <div class="message-text">
-                        Please select a Folder to start chatting with your documents.
-                        Click the settings icon <i class="bi bi-gear"></i> to select a Folder.
+                        Please select a folder to start chatting with your documents.
+                        Click the settings icon <i class="bi bi-gear"></i> to select a folder.
                     </div>
                 </div>
             </div>
@@ -2044,7 +2044,7 @@ class ChatManager extends Component {
         this.element.classList.add('chat-disabled'); 
         const input = document.querySelector('.message-input');
         input.disabled = true;
-        input.placeholder = "Select your Folder to chat...";
+        input.placeholder = "Select your folder to start chat...";
     }
 
     clearDefaultMessage() {
@@ -2953,7 +2953,7 @@ class URLInputModal extends Component {
                                     required
                                 >
                                 <small class="text-secondary mt-2">
-                                    Enter the URL of the webpage you want to add to your Folder
+                                    Enter the URL of the webpage you want to add to your folder
                                 </small>
                             </div>
 
@@ -3358,7 +3358,7 @@ class App {
             this.updateDomainCount();
             
             this.events.emit('message', {
-                text: `Successfully created Folder ${domainData.name}`,
+                text: `Successfully created folder ${domainData.name}`,
                 type: 'success'
             });
         });
@@ -3394,13 +3394,13 @@ class App {
                     this.chatManager.enableChat();
                     
                     this.events.emit('message', {
-                        text: `Successfully switched to Folder ${domain.data.name}`,
+                        text: `Successfully switched to folder ${domain.data.name}`,
                         type: 'success'
                     });
                 }
             } catch (error) {
                 this.events.emit('message', {
-                    text: 'Failed to select Folder',
+                    text: 'Failed to select folder',
                     type: 'error'
                 });
             }
@@ -3429,7 +3429,7 @@ class App {
                 this.domainSettingsModal.updateDomainsList(this.domainManager.getAllDomains());
                 
                 this.events.emit('message', {
-                    text: `Successfully renamed Folder to ${newName}`,
+                    text: `Successfully renamed folder to ${newName}`,
                     type: 'success'
                 });
             }
