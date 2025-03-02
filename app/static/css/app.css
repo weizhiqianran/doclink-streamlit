@@ -2490,17 +2490,14 @@ mark {
   z-index: 10;
 }
 
-/* Container styling */
 .file-list-container {
   display: flex;
   flex-direction: column;
   position: relative;
   top: 0;
   max-height: calc(100vh - 455px);
-  /* Adjust based on your needs */
   overflow-y: auto;
   overflow-x: hidden;
-  /*margin-left: -7.4%;*/
 }
 
 /* Custom scrollbar */

@@ -1634,7 +1634,7 @@ class ChatManager extends Component {
                 this.updateResources(response.resources, response.resource_sentences);
                 this.events.emit('ratingModalOpen');
                 window.app.profileLimitsModal.updateDailyCount(response.daily_count);
-            } 
+            }
             else if (response.answer) {
                 this.addMessage(response.answer, 'ai');
                 this.updateResources(response.resources, response.resource_sentences);
@@ -1642,6 +1642,7 @@ class ChatManager extends Component {
             } 
             else {
                 this.addMessage(response.message, 'ai');
+                window.app.profileLimitsModal.updateDailyCount(response.daily_count);
             }
     
         } catch (error) {
