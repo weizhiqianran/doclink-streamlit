@@ -104,7 +104,7 @@ class Database:
                 "user_email": user_info_data[2],
                 "user_type": user_info_data[3],
                 "user_created_at": str(user_info_data[4]),
-                "user_daily_count": user_daily_count[0] if user_daily_count else 0,
+                "user_daily_count": user_daily_count[0] if user_daily_count[0] else 0,
                 "user_picture_url": user_info_data[5],
             }
 
