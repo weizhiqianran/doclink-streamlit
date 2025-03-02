@@ -4,7 +4,6 @@ from pathlib import Path
 import psycopg2
 import logging
 import numpy as np
-import uuid
 from datetime import datetime
 
 from .config import GenerateConfig
@@ -244,34 +243,34 @@ class Database:
     def insert_user_guide(self, user_id: str, domain_id: str):
         """
         Insert default user guide content into user's default domain
+        using the file_id already present in default_content
         """
-        file_id = str(uuid.uuid4())
         current_date = datetime.now().date()
 
-        # Insert file info
-        query_insert_file_info = """
-        INSERT INTO file_info 
-            (user_id, domain_id, file_id, file_name, file_modified_date, file_upload_date)
-        VALUES 
-            (%s, %s, %s, %s, %s, %s)
-        """
-
-        # Copy content from default_content to file_content
-        query_insert_file_content = """
-        INSERT INTO file_content 
-            (file_id, sentence, is_header, is_table, page_number, embedding)
-        SELECT 
-            %s,
-            sentence,
-            is_header,
-            is_table,
-            page_number,
-            embedding
-        FROM default_content
+        # First, get the file_id from default_content
+        query_get_file_id = """
+        SELECT DISTINCT file_id FROM default_content
+        LIMIT 1
         """
 
         try:
-            # Insert file info
+            # Get the file_id from default_content
+            self.cursor.execute(query_get_file_id)
+            result = self.cursor.fetchone()
+
+            if not result or not result[0]:
+                logger.error("No file_id found in default_content")
+                raise ValueError("No file_id found in default_content")
+
+            file_id = result[0]
+
+            # Insert file info with the existing file_id
+            query_insert_file_info = """
+            INSERT INTO file_info 
+                (user_id, domain_id, file_id, file_name, file_modified_date, file_upload_date)
+            VALUES 
+                (%s, %s, %s, %s, %s, %s)
+            """
             self.cursor.execute(
                 query_insert_file_info,
                 (
@@ -284,13 +283,30 @@ class Database:
                 ),
             )
 
-            # Insert file content
-            self.cursor.execute(query_insert_file_content, (file_id,))
-            return
+            # Copy content from default_content to file_content using the same file_id
+            query_insert_file_content = """
+            INSERT INTO file_content 
+                (file_id, sentence, is_header, is_table, page_number, embedding)
+            SELECT 
+                file_id,
+                sentence,
+                is_header,
+                is_table,
+                page_number,
+                embedding
+            FROM default_content
+            """
+            self.cursor.execute(query_insert_file_content)
+
+            return True
 
         except DatabaseError as e:
             self.conn.rollback()
             logger.error(f"Error inserting user guide: {str(e)}")
+            raise e
+        except Exception as e:
+            self.conn.rollback()
+            logger.error(f"Unexpected error inserting user guide: {str(e)}")
             raise e
 
     def delete_domain(self, domain_id: str):

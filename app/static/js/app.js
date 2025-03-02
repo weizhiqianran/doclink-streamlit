@@ -937,7 +937,7 @@ class FileUploadModal extends Component {
                                         <span class="visually-hidden">Loading...</span>
                                     </div>
                                     <h5 class="mb-2">Uploading Files...</h5>
-                                    <p class="text-center mb-0">Please wait for ragchat to process your files</p>
+                                    <p class="text-center mb-0">Please wait for Doclink to process your files</p>
                                     <p class="text-center text-secondary">This might take a moment depending on file size</p>
                                 </div>
                             </div>
@@ -3323,6 +3323,10 @@ class App {
             this.sourcesNumber.textContent = count;
             this.sourcesBox.setAttribute('count', count);
         }
+    }
+
+    updateDomainCount() {
+        this.domainSettingsModal.updateDomainCount();
     }
 
     setupEventListeners() {

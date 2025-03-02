@@ -70,6 +70,7 @@ CREATE TABLE IF NOT EXISTS session_info (
 
 CREATE TABLE IF NOT EXISTS default_content (
     content_id SERIAL PRIMARY KEY,
+    file_id UUID NOT NULL,
     sentence TEXT NOT NULL,
     is_header BOOLEAN DEFAULT FALSE,
     is_table BOOLEAN DEFAULT FALSE,
