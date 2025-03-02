@@ -12,6 +12,7 @@ from ..functions.embedding_functions import EmbeddingFunctions
 from ..functions.indexing_functions import IndexingFunctions
 from ..functions.chatbot_functions import ChatbotFunctions
 from ..functions.scraping_functions import Webscraper
+from ..functions.export_functions import Exporter
 
 
 class Authenticator:
@@ -74,6 +75,7 @@ class Processor:
         self.cf = ChatbotFunctions()
         self.en = Encryptor()
         self.ws = Webscraper()
+        self.ex = Exporter()
 
     def create_index(self, embeddings: np.ndarray, index_type: str = "flat"):
         if index_type == "flat":
@@ -293,6 +295,7 @@ class Processor:
         context = ""
         context_windows = []
         widened_indexes = []
+        original_matches = set(sentence_index_list)
 
         for i, sentence_index in enumerate(sentence_index_list):
             window_size = 4 if i < 3 else 2
@@ -375,10 +378,20 @@ class Processor:
                 context += f"Context{i + 1}: File:{resources['file_names'][i]}, Confidence:{(len(sentence_index_list) - i) / len(sentence_index_list)}, Table\n{windened_sentence}\n"
                 context_windows.append(windened_sentence)
             else:
-                windened_sentence = " ".join(
-                    self.en.decrypt(domain_content[index][0], domain_content[index][4])
-                    for index in range(tuple[0], tuple[1] + 1)
-                )
+                highlighted_sentences = []
+
+                for index in range(tuple[0], tuple[1] + 1):
+                    sentence_text = self.en.decrypt(
+                        domain_content[index][0], domain_content[index][4]
+                    )
+
+                    # Highlight original matches
+                    if index in original_matches:
+                        highlighted_sentences.append(f"<mark>{sentence_text}</mark>")
+                    else:
+                        highlighted_sentences.append(sentence_text)
+
+                windened_sentence = " ".join(highlighted_sentences)
                 context += f"Context{i + 1}: File:{resources['file_names'][i]}, Confidence:{(len(sentence_index_list) - i) / len(sentence_index_list)}, {windened_sentence}\n\n"
                 context_windows.append(windened_sentence)
 

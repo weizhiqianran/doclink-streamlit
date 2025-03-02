@@ -370,14 +370,14 @@ class DomainSettingsModal extends Component {
                 <div class="modal-content">
                     <div class="domain-modal-wrapper">
                         <div class="domain-header">
-                            <h5>Select Knowledge Base</h5>
+                            <h5>Select Folder</h5>
                             <button type="button" class="close-button" data-bs-dismiss="modal">
                                 <i class="bi bi-x"></i>
                             </button>
                         </div>
                         <div class="limit-indicator mb-4">
                             <div class="d-flex justify-content-between align-items-center mb-2">
-                                <small class="text-secondary">Knowledge Base Limit</small>
+                                <small class="text-secondary">Folder Limit</small>
                                 <small class="text-secondary domains-count">0/3</small>
                             </div>
                             <div class="progress" style="height: 6px; background: rgba(255, 255, 255, 0.1);">
@@ -410,7 +410,7 @@ class DomainSettingsModal extends Component {
                 <div class="modal-dialog modal-dialog-centered modal-sm">
                     <div class="modal-content">
                         <div class="domain-modal-wrapper text-center">
-                            <h6 class="mb-3">Delete Knowledge Base?</h6>
+                            <h6 class="mb-3">Delete Folder?</h6>
                             <p class="text-secondary mb-4">Are you sure you want to delete this domain?</p>
                             <div class="d-flex gap-3">
                                 <button class="btn btn-outline-secondary flex-grow-1" data-bs-dismiss="modal">Cancel</button>
@@ -441,7 +441,7 @@ class DomainSettingsModal extends Component {
                             <h6 class="mb-3">I can't do it...</h6>
                             <p class="text-secondary mb-4" id="domainInfoMessage"></p>
                             <div class="d-flex justify-content-center">
-                                <button class="btn" style="background-color: #10B981; color: #fff;" data-bs-dismiss="modal">Got it</button>
+                                <button class="btn" style="background-color: #4169E1;; color: #fff;" data-bs-dismiss="modal">Got it</button>
                             </div>
                         </div>
                     </div>
@@ -607,8 +607,8 @@ class DomainSettingsModal extends Component {
                     alertElement.innerHTML = `
                         <div class="alert-content">
                             <h5 class="alert-title">I can't do it...</h5>
-                            <p class="alert-message">Knowledge Base name must be 20 characters or less. Please try again with a shorter name!</p>
-                            <button class="alert-button" style="background-color: #10B981">Got it</button>
+                            <p class="alert-message">Folder name must be 20 characters or less. Please try again with a shorter name!</p>
+                            <button class="alert-button" style="background-color: #4169E1;">Got it</button>
                         </div>
                     `;
     
@@ -646,7 +646,7 @@ class DomainSettingsModal extends Component {
                                 <div class="alert-icon">
                                     <i class="bi bi-exclamation-circle text-primary-green"></i>
                                 </div>
-                                <h5 class="alert-title">Knowledge Base Limit Reached</h5>
+                                <h5 class="alert-title">Folder Limit Reached</h5>
                                 <p class="alert-message">${result.message}</p>
                                 <div class="domain-count mt-3 text-secondary">
                                     <small>Domains Used: ${this.domainManager.getAllDomains().length}/3</small>
@@ -670,7 +670,7 @@ class DomainSettingsModal extends Component {
                         });
                         
                     } else {
-                        this.events.emit('warning', 'Failed to create knowledge base. Please try again.');
+                        this.events.emit('warning', 'Failed to create Folder. Please try again.');
                     }
                     inputCard.remove(); 
                 }
@@ -713,7 +713,7 @@ class DomainSettingsModal extends Component {
             const newName = input.value.trim();
             if (newName && newName !== currentName) {
                 if (newName.length > 20) {
-                    this.events.emit('warning', 'Knowledge Base name must be less than 20 characters');
+                    this.events.emit('warning', 'Folder name must be less than 20 characters');
                     return;
                 }
         
@@ -1532,6 +1532,7 @@ class ChatManager extends Component {
         
         this.messageContainer = this.element.querySelector('.chat-messages');
         this.setupMessageInput();
+        this.setupExportButton();
     }
 
     setupMessageInput() {
@@ -1539,17 +1540,20 @@ class ChatManager extends Component {
         container.innerHTML = `
             <textarea 
                 class="message-input" 
-                placeholder="Please select your knowledge base ⚙️"
+                placeholder="Please select your folder from settings ⚙️ to start chat!"
                 rows="1"
                 disabled
             ></textarea>
-            <button class="send-button" disabled>
-                <i class="bi bi-send send-icon"></i>
+            <button class="export-button" disabled title="Export Selected Messages">
+             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M4 4h14a2 2 0 012 2v12a2 2 0 01-2 2H4a2 2 0 01-2-2V6a2 2 0 012-2z" stroke="currentColor" stroke-width="2"/>
+                <path d="M8 8h8M8 12h8M8 16h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M16 12l3 3m0 0l3-3m-3 3V4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
             </button>
         `;
     
         const input = container.querySelector('.message-input');
-        const sendButton = container.querySelector('.send-button');
         
         input.addEventListener('keypress', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
@@ -1558,9 +1562,6 @@ class ChatManager extends Component {
             }
         });
     
-        sendButton.addEventListener('click', () => {
-            this.handleSendMessage(input);
-        });
     }
 
     async handleSendMessage(input) {
@@ -1632,12 +1633,12 @@ class ChatManager extends Component {
                 this.addMessage(response.answer, 'ai');
                 this.updateResources(response.resources, response.resource_sentences);
                 this.events.emit('ratingModalOpen');
-                window.app.profileLimitsModal.updateDailyCount(response.question_count);
+                window.app.profileLimitsModal.updateDailyCount(response.daily_count);
             } 
             else if (response.answer) {
                 this.addMessage(response.answer, 'ai');
                 this.updateResources(response.resources, response.resource_sentences);
-                window.app.profileLimitsModal.updateDailyCount(response.question_count);
+                window.app.profileLimitsModal.updateDailyCount(response.daily_count);
             } 
             else {
                 this.addMessage(response.message, 'ai');
@@ -1664,8 +1665,63 @@ class ChatManager extends Component {
         
         if (type === 'ai') {
             text.innerHTML = this.formatMessage(content);
+            bubble.appendChild(text);
+            
+            if (!content.includes('what can I find for you?')) {
+                message.setAttribute('data-exportable', 'true');
+
+                const actionBar = document.createElement('div');
+                actionBar.className = 'message-actions';
+
+                const actionContainer = document.createElement('div');
+                actionContainer.className = 'action-container';
+
+                const selectionMark = document.createElement('div');
+                selectionMark.className = 'selection-mark';
+                selectionMark.innerHTML = '<i class="bi bi-check-circle"></i>';
+                
+                const copyButton = document.createElement('button');
+                copyButton.className = 'copy-button';
+                copyButton.innerHTML = `
+                <i class="bi bi-clipboard"></i>
+                <span class="action-text">Copy</span>`;
+                
+                copyButton.addEventListener('click', () => {
+                    const messageContent = text.innerHTML;
+                    this.copyToClipboard(messageContent);
+                    
+                    copyButton.innerHTML = `
+                    <i class="bi bi-check2"></i>
+                    <span class="action-text">Copied!</span>`;
+                    copyButton.classList.add('copied');
+                    
+                    setTimeout(() => {
+                        copyButton.innerHTML = `
+                        <i class="bi bi-clipboard"></i>
+                        <span class="action-text">Copy</span>`;
+                        copyButton.classList.remove('copied');
+                    }, 2000);
+                });
+                
+                selectionMark.addEventListener('click', () => {
+                    message.classList.toggle('selected');
+                    this.updateExportButton();
+                });
+                
+                actionContainer.appendChild(copyButton);
+                actionBar.appendChild(copyButton);
+                bubble.appendChild(selectionMark);
+                bubble.appendChild(actionBar);
+                message.appendChild(bubble);
+            } else {
+                message.appendChild(bubble);
+                bubble.appendChild(text);
+                message.appendChild(bubble);
+            }
         } else {
             text.textContent = content;
+            bubble.appendChild(text);
+            message.appendChild(bubble)
         }
         
         bubble.appendChild(text);
@@ -1676,12 +1732,97 @@ class ChatManager extends Component {
         return message;
     }
 
+    setupExportButton() {
+        const exportButton = document.querySelector('.export-button');
+        if (exportButton) {
+            exportButton.addEventListener('click', () => this.handleExportSelected());
+            exportButton.disabled = true;
+        }
+    }
+
+    updateExportButton() {
+        const exportButton = document.querySelector('.export-button');
+        const selectedMessages = document.querySelectorAll('.chat-message.ai.selected');
+        const count = selectedMessages.length;
+
+        let counter = document.querySelector('.export-counter');
+        if (!counter) {
+            counter = document.createElement('div');
+            counter.className = 'export-counter';
+            exportButton.parentElement.appendChild(counter);
+        }
+
+        counter.textContent = `${count}/10`;
+        counter.style.color = count === 10 ? '#10B981' : 'white';
+        
+        exportButton.disabled = count === 0;
+        
+        if (count > 10) {
+            const lastSelected = selectedMessages[selectedMessages.length - 1];
+            lastSelected.classList.remove('selected');
+            this.updateExportButton();
+        }
+    }
+
+    getSelectedMessages() {
+        const selectedMessages = document.querySelectorAll('.chat-message.ai.selected');
+        return Array.from(selectedMessages).map(message => {
+            return message.querySelector('.message-text').innerHTML;
+        });
+    }
+
+    async handleExportSelected() {
+        const selectedContents = this.getSelectedMessages();
+        if (selectedContents.length === 0 || selectedContents.length > 10 ) return;
+
+        const exportButton = document.querySelector('.export-button');
+        const originalHTML = exportButton.innerHTML;
+        
+        try {
+            // Show loading state
+            exportButton.innerHTML = `<div class="spinner-border spinner-border-sm" role="status"></div>`;
+            exportButton.disabled = true;
+
+            const result = await window.exportResponse(selectedContents);
+            
+            if (result === true) {
+                // Success state
+                exportButton.innerHTML = '<i class="bi bi-check2"></i>';
+                setTimeout(() => {
+                    // Reset state
+                    exportButton.innerHTML = originalHTML;
+                    exportButton.disabled = false;
+                    
+                    // Deselect all messages
+                    document.querySelectorAll('.chat-message.ai.selected').forEach(msg => {
+                        msg.classList.remove('selected');
+                    });
+                    this.updateExportButton();
+                }, 2000);
+            } else {
+                // Error state
+                exportButton.innerHTML = '<i class="bi bi-x-circle"></i>';
+                setTimeout(() => {
+                    exportButton.innerHTML = originalHTML;
+                    exportButton.disabled = false;
+                }, 2000);
+            }
+        } catch (error) {
+            console.error('Export failed:', error);
+            exportButton.innerHTML = '<i class="bi bi-x-circle"></i>';
+            setTimeout(() => {
+                exportButton.innerHTML = originalHTML;
+                exportButton.disabled = false;
+            }, 2000);
+        }
+    }
+
     updateHeader(domainName = null) {
         const headerTitle = document.querySelector('.header-title');
         if (!headerTitle) return;
         
         if (domainName) {
-            headerTitle.innerHTML = `Chat with <span style="color: #10B981; font-size: 1.1em;">${domainName}</span>`;
+            headerTitle.innerHTML = `Chat with <span style="color: var(--primary-dark); font-size: 1.1em;">${domainName}</span>`;
         } else {
             headerTitle.textContent = 'Chat';
         }
@@ -1696,7 +1837,7 @@ class ChatManager extends Component {
                     <div class="spinner-border text-light" role="status">
                         <span class="visually-hidden">Loading...</span>
                     </div>
-                </div>
+                </div>  
             </div>
         `;
         this.messageContainer.appendChild(message);
@@ -1709,8 +1850,8 @@ class ChatManager extends Component {
             <div class="chat-message ai">
                 <div class="message-bubble ai-bubble">
                     <div class="message-text">
-                        Please select a knowledge base to start chatting with your documents.
-                        Click the settings icon <i class="bi bi-gear"></i> to select a knowledge base.
+                        Please select a Folder to start chatting with your documents.
+                        Click the settings icon <i class="bi bi-gear"></i> to select a Folder.
                     </div>
                 </div>
             </div>
@@ -1721,98 +1862,122 @@ class ChatManager extends Component {
         // First process headers
         let formattedText = text.replace(/\[header\](.*?)\[\/header\]/g, '<div class="message-header">$1</div>');
         
-        // Process bold terms
-        formattedText = formattedText.replace(/\*\*(.*?)\*\*/g, '<strong class="message-bold">$1</strong>');
-        
         // Handle nested lists with proper indentation
         formattedText = formattedText.replace(/^-\s*(.*?)$/gm, '<div class="message-item">$1</div>');
         formattedText = formattedText.replace(/^\s{2}-\s*(.*?)$/gm, '<div class="message-item nested-1">$1</div>');
         formattedText = formattedText.replace(/^\s{4}-\s*(.*?)$/gm, '<div class="message-item nested-2">$1</div>');
+
+        // Process bold terms
+        formattedText = formattedText.replace(/\*\*(.*?)\*\*/g, '<strong class="message-bold">$1</strong>');
+        formattedText = formattedText.replace(/\[bold\](.*?)\[\/bold\]/g, '<strong class="message-bold">$1</strong>');
         
         return `<div class="message-content">${formattedText}</div>`;
-      }
+    }
 
-      convertMarkdownToHtmlTable(content) {
+    convertMarkdownToHtmlTable(content) {
         if (!content.includes('|')) {
             return content;
         }
     
-        const tableRegex = /\|[^\|]+(?:\|[^\|]+)*\|/g;
-        let lastIndex = 0;
         let segments = [];
-        let match;
-    
-        tableRegex.lastIndex = 0;
         
-        while ((match = tableRegex.exec(content)) !== null) {
-            if (match.index > lastIndex) {
-                const textContent = content.substring(lastIndex, match.index).trim();
-                if (textContent) {
-                    segments.push(`<div class="description-content">${textContent}</div>`);
+
+        const startsWithTable = content.trimStart().startsWith('|');
+        
+        if (startsWithTable) {
+            const tableEndIndex = findTableEndIndex(content);
+            if (tableEndIndex > 0) {
+                const tableContent = content.substring(0, tableEndIndex).trim();
+                segments.push(processTableContent(tableContent));
+                
+                if (tableEndIndex < content.length) {
+                    const remainingText = content.substring(tableEndIndex).trim();
+                    if (remainingText) {
+                        segments.push(convertMarkdownToHtmlTable(remainingText));
+                    }
+                }
+            } else {
+                segments.push(processTableContent(content));
+            }
+        } else {
+            const tableRegex = /(\|[^\n]+\|(?:\r?\n\|[^\n]+\|)*)/g;
+            let lastIndex = 0;
+            let match;
+            
+            while ((match = tableRegex.exec(content)) !== null) {
+                if (match.index > lastIndex) {
+                    const textContent = content.substring(lastIndex, match.index).trim();
+                    if (textContent) {
+                        segments.push(`<div class="description-content">${textContent}</div>`);
+                    }
+                }
+                
+                segments.push(processTableContent(match[0]));
+                lastIndex = match.index + match[0].length;
+            }
+            
+            if (lastIndex < content.length) {
+                const remainingText = content.substring(lastIndex).trim();
+                if (remainingText) {
+                    segments.push(`<div class="description-content">${remainingText}</div>`);
+                }
+            }
+        }
+        
+        return segments.join('');
+        
+        function findTableEndIndex(text) {
+            const lines = text.split('\n');
+            let lineIndex = 0;
+            
+            for (let i = 0; i < lines.length; i++) {
+                lineIndex += lines[i].length + 1;
+                if (!lines[i].trimStart().startsWith('|')) {
+                    return lineIndex - 1;
                 }
             }
             
-            const tableContent = match[0];
-    
-            const rows = tableContent
-                .trim()
-                .split('\n')
-                .slice(1)
-                .filter(row => {
-                    const cleanRow = row.replace(/[|\s-]/g, '');
-                    return cleanRow.length > 0;
-                });
-    
+            return -1;
+        }
+        
+        function processTableContent(tableContent) {
+            const rows = tableContent.split(/\r?\n/).filter(row => row.trim() && row.includes('|'));
+            
             let htmlTable = '<div class="table-wrapper"><table class="resource-table">';
+            let hasSeparatorRow = rows.some(row => 
+                row.replace(/[\|\-:\s]/g, '').length === 0
+            );
             
             rows.forEach((row, rowIndex) => {
-                const cells = row
-                    .split('|')
-                    .filter(cell => cell.trim())
-                    .map(cell => {
-                        const cleanCell = cell.trim();
-                            if (cleanCell.match(/^-+$/)) return '';
-                            return cleanCell
-                             // Handle any type of subscript (letter followed by number)
-                             .replace(/\s+/g, ' ')
-                             // Handle numeric values with units
-                             .replace(/(\d+\.?\d*)\s*([A-Za-z²³/]+)/, '<span class="numeric">$1</span> <span class="unit">$2</span>')
-                             // Handle row identifiers
-                             .replace(/^\(([i\d]+)\)/, '<span class="identifier">($1)</span>');
-                    });
-                    
+                if (row.replace(/[\|\-:\s]/g, '').length === 0) return;
+                
+                const cells = [];
+                let cellMatch;
+                const cellRegex = /\|(.*?)(?=\||$)/g;
+                
+                while ((cellMatch = cellRegex.exec(row + '|')) !== null) {
+                    if (cellMatch[1] !== undefined) {
+                        cells.push(cellMatch[1].trim());
+                    }
+                }
+                
+                if (cells.length === 0) return;
+                
                 htmlTable += '<tr>';
                 cells.forEach(cell => {
-                    if (!cell) return;
-                    const cellTag = rowIndex === 0 ? 'th' : 'td';
-                    const className = [];
+                    const isHeader = (rowIndex === 0 && !hasSeparatorRow) || 
+                                   (rowIndex === 0 && hasSeparatorRow);
+                    const cellTag = isHeader ? 'th' : 'td';
                     
-                    if (cell.includes('class="numeric"') || !isNaN(cell.replace(/[^\d.-]/g, ''))) {
-                        className.push('align-right');
-                    }
-                    
-                    if (cell.includes('class="identifier"')) {
-                        className.push('indent-cell');
-                    }
-                    htmlTable += `<${cellTag}${className.length ? ` class="${className.join(' ')}"` : ''}>${cell}</${cellTag}>`;
+                    htmlTable += `<${cellTag} class="align-left">${cell}</${cellTag}>`;
                 });
                 htmlTable += '</tr>';
             });
             
             htmlTable += '</table></div>';
-            segments.push(htmlTable);
-            lastIndex = match.index + match[0].length;
+            return htmlTable;
         }
-        
-        if (lastIndex < content.length) {
-            const remainingText = content.substring(lastIndex).trim();
-            if (remainingText) {
-                segments.push(`<div class="description-content">${remainingText}</div>`);
-                }
-            }
-        
-        return segments.join('');
-        }
+    }
 
     updateResources(resources, sentences) {
         const container = document.querySelector('.resources-list');
@@ -1850,6 +2015,20 @@ class ChatManager extends Component {
         });
     }
 
+    copyToClipboard(content) {
+        const cleanText = content.replace(/<div class="message-header">(.*?)<\/div>/g, '$1\n')
+            .replace(/<div class="message-item.*?">(.*?)<\/div>/g, '- $1')
+            .replace(/<div class="message-item nested-1">(.*?)<\/div>/g, '  - $1')
+            .replace(/<div class="message-item nested-2">(.*?)<\/div>/g, '    - $1')
+            .replace(/<strong class="message-bold">(.*?)<\/strong>/g, '$1')
+            .replace(/<[^>]+>/g, '')
+            .replace(/\n\s*\n/g, '\n\n')
+            .trim();
+    
+        navigator.clipboard.writeText(cleanText)
+            .catch(err => console.error('Failed to copy text:', err));
+    }
+
     scrollToBottom() {
         this.element.scrollTop = this.element.scrollHeight;
     }
@@ -1857,19 +2036,15 @@ class ChatManager extends Component {
     enableChat() {
         this.element.classList.remove('chat-disabled');
         const input = document.querySelector('.message-input');
-        const button = document.querySelector('.send-button');
         input.disabled = false;
-        button.disabled = false;
         input.placeholder = "Send message";
     }
 
     disableChat() {
         this.element.classList.add('chat-disabled'); 
         const input = document.querySelector('.message-input');
-        const button = document.querySelector('.send-button');
         input.disabled = true;
-        button.disabled = true;
-        input.placeholder = "Select your knowledge base to chat...";
+        input.placeholder = "Select your Folder to chat...";
     }
 
     clearDefaultMessage() {
@@ -1881,11 +2056,11 @@ class ChatManager extends Component {
 class Sidebar extends Component {
     constructor(domainManager) {
         const element = document.createElement('div');
-        element.className = 'sidebar-container';
+        element.className = 'sidebar-container open';
         super(element);
         
         this.domainManager = domainManager;
-        this.isOpen = false;
+        this.isOpen = true;
         this.timeout = null;
         this.selectedFiles = new Set();
         this.render();
@@ -1899,7 +2074,10 @@ class Sidebar extends Component {
                 <div class="top-header py-3 px-4">
                     <div class="d-flex align-items-center justify-content-between">
                         <div class="d-flex align-items-center gap-3">
-                            <h1 class="logo-text m-0 d-xl-block">Doclink</h1>
+                                <div class="logo-container">
+                                <img src="/static/favicon/apple-touch-icon.png" alt="Doclink" class="logo-image">
+                                <h1 class="logo-text">Doclink</h1>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1909,7 +2087,9 @@ class Sidebar extends Component {
                             <i class="bi bi-folder empty-folder"></i>
                             <span class="d-xl-block selected-domain-text">Unselected</span>
                         </div>
-                        <i class="bi bi-gear settings-icon"></i>
+                        <div class="settings-icon" title="Select Domain">
+                            <i class="bi bi-folder2-open"></i>
+                        </div>
                     </div>
 
                     <div class="file-list-container">
@@ -1920,8 +2100,8 @@ class Sidebar extends Component {
                         <button class="open-file-btn">
                             Add Sources
                         </button>
-                        <p class="helper-text">
-                            To add first select on ⚙️
+                        <p class="helper-text text-center" style="color: var(--primary-dark)">
+                            Select a folder from 📁 to start chatting
                         </p>
                     </div>
                 </div>
@@ -1944,10 +2124,6 @@ class Sidebar extends Component {
                                 <i class="bi bi-person-circle"></i>
                                 Profile
                             </div>
-                            <div class="menu-item">
-                                <i class="bi bi-gear"></i>
-                                Settings
-                            </div>
                             <div class="menu-divider"></div>
                             <div class="menu-item logout-item">
                                 <i class="bi bi-box-arrow-right"></i>
@@ -1963,64 +2139,28 @@ class Sidebar extends Component {
                 <div id="sidebar-seperator"></div>
             </div>
         `;
-
-        // Create backdrop
-        this.backdrop = document.createElement('div');
-        this.backdrop.className = 'sidebar-backdrop';
-        document.body.appendChild(this.backdrop);
     }
 
     setupEventListeners() {
         // Existing event listeners
         const settingsIcon = this.element.querySelector('.settings-icon');
+         if (settingsIcon) {
         settingsIcon.addEventListener('click', () => {
             this.events.emit('settingsClick');
         });
+        }
     
         const fileMenuBtn = this.element.querySelector('.open-file-btn');
         fileMenuBtn.addEventListener('click', () => {
             this.events.emit('fileMenuClick');
         });
     
-        this.backdrop.addEventListener('click', () => {
-            this.toggle(false);
-        });
     
         // Add hover handlers for desktop
         const menuTrigger = document.querySelector('.menu-trigger');
-        if (window.innerWidth >= 992 && menuTrigger) {
-            // Menu trigger hover
-            if (menuTrigger) {
-                menuTrigger.addEventListener('mouseenter', () => {
-                    console.log('Menu trigger hover');
-                    clearTimeout(this.timeout);
-                    this.toggle(true);
-                });
-    
-                menuTrigger.addEventListener('mouseleave', () => {
-                    this.timeout = setTimeout(() => {
-                        if (!this.element.matches(':hover')) {
-                            this.toggle(false);
-                        }
-                    }, 300);
-                });
-            }
-
-            // Sidebar hover
-            this.element.addEventListener('mouseenter', () => {
-                console.log('Sidebar hover');
-                clearTimeout(this.timeout);
-                this.toggle(true);
-            });
-    
-            this.element.addEventListener('mouseleave', () => {
-                if (this.isModalOpen) return;  // Prevent closing if modal is open
-
-                this.timeout = setTimeout(() => {
-                    if (!document.querySelector('.menu-trigger')?.matches(':hover')) {
-                        this.toggle(false);
-                    }
-                }, 300);
+        if (menuTrigger) {
+            menuTrigger.addEventListener('click', () => {
+                this.toggle();
             });
         }
 
@@ -2049,7 +2189,6 @@ class Sidebar extends Component {
         // Handle window resize
         window.addEventListener('resize', () => {
             if (window.innerWidth >= 992) {
-                this.backdrop.classList.remove('show');
                 document.body.style.overflow = '';
                 const menuIcon = document.querySelector('.menu-trigger .bi-list');
                 if (menuIcon) {
@@ -2113,25 +2252,41 @@ class Sidebar extends Component {
         }
     }
 
-    toggle(force = null) {
-        this.isOpen = force !== null ? force : !this.isOpen;
+    toggle() {
+        this.isOpen = !this.isOpen;
         this.element.classList.toggle('open', this.isOpen);
-        this.backdrop.classList.toggle('show', this.isOpen);
-        document.body.style.overflow = this.isOpen ? 'hidden' : '';
+        
+        // Toggle chat container margin
+        const chatContainer = document.querySelector('.chat-container');
+        if (chatContainer) {
+            chatContainer.classList.toggle('sidebar-closed', !this.isOpen);
+
+            const messageContainer = document.querySelector('.message-container');
+            if (messageContainer) {
+                messageContainer.style.left = this.isOpen ? '294px' : '0';
+                messageContainer.style.width = this.isOpen ? 
+                    'calc(100% - 600px - 294px)' : 
+                    'calc(100% - 600px)';
+            }
+        }
+
     }
 
     updateDomainSelection(domain) {
         const domainText = this.element.querySelector('.selected-domain-text');
         const folderIcon = this.element.querySelector('.bi-folder');
+        const helperText = this.element.querySelector('.helper-text');
         
         if (domain) {
             domainText.textContent = domain.name;
             domainText.title = domain.name;
             folderIcon.classList.remove('empty-folder');
+            helperText.style.display = 'none';
         } else {
-            domainText.textContent = 'Select Knowledge Base';
+            domainText.textContent = 'No Domain Selected';
             domainText.removeAttribute('title');
             folderIcon.classList.add('empty-folder');
+            helperText.style.display = 'block';
         }
     }
 
@@ -2172,7 +2327,7 @@ class Sidebar extends Component {
         fileItem.innerHTML = `
             <div class="d-flex align-items-center w-100">
                 <div class="icon-container">
-                    <i class="bi ${icon} file-icon sidebar-file-list-icon" style="color:#10B981"></i>
+                    <i class="bi ${icon} file-icon sidebar-file-list-icon" style="color: var(--primary-dark)"></i>
                     <button class="delete-file-btn">
                         <i class="bi bi-trash"></i>
                     </button>
@@ -2294,6 +2449,17 @@ class Sidebar extends Component {
         window.app.updateSourcesCount(this.selectedFiles.size);
     }
 
+    updatePlanBadge(userType) {
+        const planBadge = this.element.querySelector('.plan-badge');
+        if (planBadge) {
+            if (userType === 'premium') {
+                planBadge.textContent = 'Premium Plan';
+            } else {
+                planBadge.textContent = 'Free Plan';
+            }
+        }
+    }
+
     hideDeleteConfirmations() {
         this.element.querySelectorAll('.delete-confirm-actions').forEach(actions => {
             actions.classList.remove('show');
@@ -2309,7 +2475,6 @@ class Sidebar extends Component {
     }
 
     getFileIcon(extension) {
-        console.log(extension)
         const iconMap = {
             pdf: 'bi-file-pdf',
             docx: 'bi-file-word',
@@ -2788,7 +2953,7 @@ class URLInputModal extends Component {
                                     required
                                 >
                                 <small class="text-secondary mt-2">
-                                    Enter the URL of the webpage you want to add to your knowledge base
+                                    Enter the URL of the webpage you want to add to your Folder
                                 </small>
                             </div>
 
@@ -2992,7 +3157,7 @@ class ProfileLimitsModal extends Component {
                                     <small class="text-secondary sources-count">0/20</small>
                                 </div>
                                 <div class="progress" style="height: 6px; background: rgba(255, 255, 255, 0.1);">
-                                    <div class="progress-bar bg-primary-green" style="width: 0%"></div>
+                                    <div class="progress-bar bg-primary-blue" style="width: 0%"></div>
                                 </div>
                             </div>
 
@@ -3000,7 +3165,7 @@ class ProfileLimitsModal extends Component {
                             <div class="limit-indicator mb-3">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                     <div>
-                                        <small class="text-secondary d-block">Knowledge Bases</small>
+                                        <small class="text-secondary d-block">Folders</small>
                                         <small class="text-white-50">Number of domains you can create</small>
                                     </div>
                                     <small class="text-secondary domains-count">0/3</small>
@@ -3042,6 +3207,17 @@ class ProfileLimitsModal extends Component {
     updateLimits() {
         const domains = this.domainManager.getAllDomains();
         let totalSources = 0;
+        const userType = window.app?.userData?.user_info?.user_type || 'free';
+        const upgradeButton = this.element.querySelector('.upgrade-section');
+
+        // Show/hide upgrade button based on user type
+        if (upgradeButton) {
+            if (userType === 'premium') {
+                upgradeButton.style.display = 'none';
+            } else {
+                upgradeButton.style.display = 'block';
+            }
+        }
 
         domains.forEach(domain => {
             if (domain.fileCount) {
@@ -3049,13 +3225,16 @@ class ProfileLimitsModal extends Component {
             }
         });
         
-        this.updateProgressBar('sources', totalSources, 20);
-
-        const domainCount = domains.length;
-        this.updateProgressBar('domains', domainCount, 3);
-
-        this.updateProgressBar('questions', this.dailyQuestionsCount, 50);
-
+        if (userType === 'free') {
+            this.updateProgressBar('sources', totalSources, 10);
+            this.updateProgressBar('domains', domains.length, 3);
+            this.updateProgressBar('questions', this.dailyQuestionsCount, 10);
+        } else if (userType === 'premium') {
+            this.updateProgressBar('sources', totalSources, 100);
+            this.updateProgressBar('domains', domains.length, 20);
+            this.updateProgressBar('questions', this.dailyQuestionsCount, 200);
+        }
+        
     }
 
     updateDailyCount(count) {
@@ -3126,7 +3305,16 @@ class App {
         const userAvatar = this.sidebar.element.querySelector('.user-avatar');
         
         userEmail.textContent = this.userData.user_info.user_email;
-        userAvatar.textContent = this.userData.user_info.user_name[0].toUpperCase();
+        
+        if (this.userData.user_info.user_picture_url && this.userData.user_info.user_picture_url !== "null") {
+            userAvatar.innerHTML = `<img src="${this.userData.user_info.user_picture_url}" alt="${this.userData.user_info.user_name}" class="user-avatar-img">`;
+            userAvatar.classList.add('has-image');
+        } else {
+            userAvatar.textContent = this.userData.user_info.user_name[0].toUpperCase();
+            userAvatar.classList.remove('has-image');
+        }
+
+        this.sidebar.updatePlanBadge(this.userData.user_info.user_type);
     }
 
     updateSourcesCount(count) {
@@ -3170,7 +3358,7 @@ class App {
             this.updateDomainCount();
             
             this.events.emit('message', {
-                text: `Successfully created knowledge base ${domainData.name}`,
+                text: `Successfully created Folder ${domainData.name}`,
                 type: 'success'
             });
         });
@@ -3206,13 +3394,13 @@ class App {
                     this.chatManager.enableChat();
                     
                     this.events.emit('message', {
-                        text: `Successfully switched to knowledge base ${domain.data.name}`,
+                        text: `Successfully switched to Folder ${domain.data.name}`,
                         type: 'success'
                     });
                 }
             } catch (error) {
                 this.events.emit('message', {
-                    text: 'Failed to select knowledge base',
+                    text: 'Failed to select Folder',
                     type: 'error'
                 });
             }
@@ -3241,7 +3429,7 @@ class App {
                 this.domainSettingsModal.updateDomainsList(this.domainManager.getAllDomains());
                 
                 this.events.emit('message', {
-                    text: `Successfully renamed knowledge base to ${newName}`,
+                    text: `Successfully renamed Folder to ${newName}`,
                     type: 'success'
                 });
             }
@@ -3273,7 +3461,7 @@ class App {
                 this.updateDomainCount();
 
                 this.events.emit('message', {
-                    text: 'Knowledge Base successfully deleted',
+                    text: 'Folder successfully deleted',
                     type: 'success'
                 });
             }
@@ -3382,6 +3570,8 @@ class App {
             this.domainManager.getAllDomains()
         );
 
+        window.user_type = this.userData.user_type
+
         // Add sidebar to DOM
         document.body.appendChild(this.sidebar.element);
 
@@ -3393,11 +3583,13 @@ class App {
             });
         }
 
+        window.app.profileLimitsModal.updateDailyCount(this.userData.user_info.user_daily_count);
+
         // Welcome operations
         const isFirstTime = window.serverData.isFirstTime === 'True';
         if (isFirstTime) {
             localStorage.setItem('firstTime', 0);
-            const firstTimeMsg = `[header]Welcome to Doclink${this.userData.user_info.user_name ? `, ${this.userData.user_info.user_name}` : ''}👋[/header]\nI've automatically set up your first knowledge base with helpful guide about using Doclink. You can always use this file to get any information about Doclink!\n[header]To get started[/header]\n- Ask any question about Doclink's features and capabilities \n- Try asking "What can Doclink do?" or "How do I organize my documents?"\n- The user guide has been uploaded to your first knowledge base\n- All answers will include source references\n\n[header]Quick Tips[/header]\n- Open & close navigation bar by hovering\n- Click ⚙️ to manage domains and documents\n- Upload files via "Add Sources" button after selecting a knowledge base\n- Check right panel for answer sources\n- Supports PDF, DOCX, Excel, PowerPoint, UDF and TXT formats\n- Create different domains for different topics\n- View highlighted source sections in answers\n- Use file checkboxes to control search scope`;
+            const firstTimeMsg = `[header]Welcome to Doclink${this.userData.user_info.user_name ? `, ${this.userData.user_info.user_name}` : ''}👋[/header]\nI've automatically set up your first Folder with helpful guide about using Doclink. You can always use this file to get any information about Doclink!\n[header]To get started[/header]\n- Ask any question about Doclink's features and capabilities \n- Try asking "What can Doclink do?" or "How do I organize my documents?"\n- The user guide has been uploaded to your first Folder\n- All answers will include source references\n\n[header]Quick Tips[/header]\n- Open & close navigation bar by hovering\n- Click ⚙️ to manage domains and documents\n- Upload files via "Add Sources" button after selecting a Folder\n- Check right panel for answer sources\n- Supports PDF, DOCX, Excel, PowerPoint, UDF and TXT formats\n- Create different domains for different topics\n- View highlighted source sections in answers\n- Use file checkboxes to control search scope`;
             this.chatManager.addMessage(firstTimeMsg, 'ai');
 
             const domains = this.domainManager.getAllDomains();
