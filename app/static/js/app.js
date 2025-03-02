@@ -3210,12 +3210,17 @@ class ProfileLimitsModal extends Component {
         const userType = window.app?.userData?.user_info?.user_type || 'free';
         const upgradeButton = this.element.querySelector('.upgrade-section');
 
-        // Show/hide upgrade button based on user type
-        if (upgradeButton) {
-            if (userType === 'premium') {
-                upgradeButton.style.display = 'none';
-            } else {
-                upgradeButton.style.display = 'block';
+        const limitsContainer = this.element.querySelector('.limits-container');
+        if (limitsContainer) {
+            const limitIndicators = limitsContainer.querySelectorAll('.limit-indicator');
+            const dailyQuestionBar = limitIndicators.length >= 3 ? limitIndicators[2] : null;
+            
+            if (upgradeButton) {
+                upgradeButton.style.display = userType === 'premium' ? 'none' : 'block';
+            }
+            
+            if (dailyQuestionBar) {
+                dailyQuestionBar.style.display = userType === 'premium' ? 'none' : 'block';
             }
         }
 
@@ -3231,8 +3236,7 @@ class ProfileLimitsModal extends Component {
             this.updateProgressBar('questions', this.dailyQuestionsCount, 10);
         } else if (userType === 'premium') {
             this.updateProgressBar('sources', totalSources, 100);
-            this.updateProgressBar('domains', domains.length, 20);
-            this.updateProgressBar('questions', this.dailyQuestionsCount, 200);
+            this.updateProgressBar('domains', domains.length, 10);
         }
         
     }
@@ -3240,7 +3244,7 @@ class ProfileLimitsModal extends Component {
     updateDailyCount(count) {
         this.dailyQuestionsCount = count;
         if (this.element.classList.contains('show')) {
-            this.updateProgressBar('questions', count, 50);
+            this.updateProgressBar('questions', count, 10);
         }
     }
 
