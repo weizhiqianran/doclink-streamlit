@@ -417,7 +417,7 @@ class Database:
                     "message": "Free users can only create up to 3 domains. Upgrade account to create more domains!",
                 }
 
-            elif user_type == "premium" and domain_count >= 20:
+            elif user_type == "premium" and domain_count >= 10:
                 return {
                     "success": False,
                     "message": "Premium users can only create up to 20 domains. Upgrade account to create more domains!",
@@ -475,12 +475,12 @@ class Database:
             if user_type == "free" and file_count + len(file_info_batch) > 10:
                 return {
                     "success": False,
-                    "message": f"Free users can only have 10 total files. You currently have {file_count} files across all domains. Upgrade to add more!",
+                    "message": f"Free users can only have 10 total files. You currently have {file_count} files across all folders. Upgrade to add more!",
                 }
-            elif user_type == "premium" and file_count + len(file_info_batch) > 200:
+            elif user_type == "premium" and file_count + len(file_info_batch) > 100:
                 return {
                     "success": False,
-                    "message": f"Premium users can only have 100 total files. You currently have {file_count} files across all domains",
+                    "message": f"Premium users can only have 100 total files. You currently have {file_count} files across all folders",
                 }
 
             self._insert_file_info_batch(file_info_batch)

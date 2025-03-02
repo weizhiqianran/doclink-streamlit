@@ -160,7 +160,7 @@ async def chat_page(request: Request, session_id: str):
                     db.insert_domain_info(
                         user_id=request.state.user_id,
                         domain_id=domain_id,
-                        domain_name="My First Domain",
+                        domain_name="My First Folder",
                         domain_type=0,
                     )
                     db.insert_user_guide(

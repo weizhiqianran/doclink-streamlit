@@ -3152,7 +3152,7 @@ class ProfileLimitsModal extends Component {
                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                     <div>
                                         <small class="text-secondary d-block">Total Sources</small>
-                                        <small class="text-white-50">Upload limit across all domains</small>
+                                        <small class="text-white-50">Source limit across all folders</small>
                                     </div>
                                     <small class="text-secondary sources-count">0/20</small>
                                 </div>
@@ -3166,7 +3166,7 @@ class ProfileLimitsModal extends Component {
                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                     <div>
                                         <small class="text-secondary d-block">Folders</small>
-                                        <small class="text-white-50">Number of domains you can create</small>
+                                        <small class="text-white-50">Number of folders you can create</small>
                                     </div>
                                     <small class="text-secondary domains-count">0/3</small>
                                 </div>
@@ -3521,7 +3521,7 @@ class App {
         const premiumLink = this.sidebar.element.querySelector('.premium-link');
         premiumLink?.addEventListener('click', (e) => {
             e.preventDefault();
-            this.premiumModal.show();
+            this.initiateCheckout();
         });
 
         this.profileLimitsModal.events.on('upgradeClick', () => {
