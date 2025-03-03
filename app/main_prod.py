@@ -62,16 +62,16 @@ async def add_security_headers(request: Request, call_next):
         "style-src 'self' 'unsafe-inline' "
         "https://fonts.googleapis.com "
         "https://cdn.jsdelivr.net "
-        "https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/ "  # Specific Bootstrap CSS
-        "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/;"  # Bootstrap Icons
-        "style-src-elem 'self' 'unsafe-inline' "  # Added style-src-elem
+        "https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/ "
+        "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/;"
+        "style-src-elem 'self' 'unsafe-inline' "
         "https://fonts.googleapis.com "
         "https://cdn.jsdelivr.net "
         "https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/ "
         "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/;"
         "font-src 'self' https://fonts.gstatic.com "
-        "https://cdn.jsdelivr.net data:;"  # Added data: for inline fonts
-        "img-src 'self' data: https://www.google-analytics.com;"
+        "https://cdn.jsdelivr.net data:;"
+        "img-src 'self' data: https://www.google-analytics.com https://*.googleusercontent.com;"
         "connect-src 'self' https://www.google-analytics.com;"
     )
 
