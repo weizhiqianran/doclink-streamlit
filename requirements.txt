@@ -12,6 +12,7 @@ cachetools==5.5.0
 catalogue==2.0.10
 certifi==2024.8.30
 cffi==1.17.1
+chardet==5.2.0
 charset-normalizer==3.4.0
 click==8.1.7
 cloudpathlib==0.20.0
@@ -141,6 +142,7 @@ ratelimit==2.2.1
 redis==5.2.0
 referencing==0.35.1
 regex==2024.11.6
+reportlab==4.3.1
 requests==2.32.3
 requests-html==0.10.0
 requests-oauthlib==2.0.0
