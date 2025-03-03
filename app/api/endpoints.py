@@ -301,7 +301,10 @@ async def generate_answer(
 
         if not resources or not resource_sentences:
             return JSONResponse(
-                content={"message": answer},
+                content={
+                    "message": answer,
+                    "daily_count": update_result["daily_count"],
+                },
                 status_code=200,
             )
 

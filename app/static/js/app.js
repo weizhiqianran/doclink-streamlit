@@ -1634,7 +1634,7 @@ class ChatManager extends Component {
                 this.updateResources(response.resources, response.resource_sentences);
                 this.events.emit('ratingModalOpen');
                 window.app.profileLimitsModal.updateDailyCount(response.daily_count);
-            } 
+            }
             else if (response.answer) {
                 this.addMessage(response.answer, 'ai');
                 this.updateResources(response.resources, response.resource_sentences);
@@ -1642,6 +1642,7 @@ class ChatManager extends Component {
             } 
             else {
                 this.addMessage(response.message, 'ai');
+                window.app.profileLimitsModal.updateDailyCount(response.daily_count);
             }
     
         } catch (error) {
@@ -2280,12 +2281,12 @@ class Sidebar extends Component {
         if (domain) {
             domainText.textContent = domain.name;
             domainText.title = domain.name;
-            folderIcon.classList.remove('empty-folder');
+            folderIcon.className = 'bi bi-folder empty-folder';
             helperText.style.display = 'none';
         } else {
             domainText.textContent = 'No Domain Selected';
             domainText.removeAttribute('title');
-            folderIcon.classList.add('empty-folder');
+            folderIcon.className = 'bi bi-folder empty-folder';
             helperText.style.display = 'block';
         }
     }
@@ -3182,7 +3183,7 @@ class ProfileLimitsModal extends Component {
                                         <small class="text-secondary d-block">Daily Questions</small>
                                         <small class="text-white-50">Resets daily at midnight UTC</small>
                                     </div>
-                                    <small class="text-secondary questions-count">0/50</small>
+                                    <small class="text-secondary questions-count">0/10</small>
                                 </div>
                                 <div class="progress" style="height: 6px; background: rgba(255, 255, 255, 0.1);">
                                     <div class="progress-bar bg-primary-green" style="width: 0%"></div>
@@ -3210,12 +3211,17 @@ class ProfileLimitsModal extends Component {
         const userType = window.app?.userData?.user_info?.user_type || 'free';
         const upgradeButton = this.element.querySelector('.upgrade-section');
 
-        // Show/hide upgrade button based on user type
-        if (upgradeButton) {
-            if (userType === 'premium') {
-                upgradeButton.style.display = 'none';
-            } else {
-                upgradeButton.style.display = 'block';
+        const limitsContainer = this.element.querySelector('.limits-container');
+        if (limitsContainer) {
+            const limitIndicators = limitsContainer.querySelectorAll('.limit-indicator');
+            const dailyQuestionBar = limitIndicators.length >= 3 ? limitIndicators[2] : null;
+            
+            if (upgradeButton) {
+                upgradeButton.style.display = userType === 'premium' ? 'none' : 'block';
+            }
+            
+            if (dailyQuestionBar) {
+                dailyQuestionBar.style.display = userType === 'premium' ? 'none' : 'block';
             }
         }
 
@@ -3232,7 +3238,6 @@ class ProfileLimitsModal extends Component {
         } else if (userType === 'premium') {
             this.updateProgressBar('sources', totalSources, 100);
             this.updateProgressBar('domains', domains.length, 20);
-            this.updateProgressBar('questions', this.dailyQuestionsCount, 200);
         }
         
     }
@@ -3240,7 +3245,7 @@ class ProfileLimitsModal extends Component {
     updateDailyCount(count) {
         this.dailyQuestionsCount = count;
         if (this.element.classList.contains('show')) {
-            this.updateProgressBar('questions', count, 50);
+            this.updateProgressBar('questions', count, 10);
         }
     }
 
