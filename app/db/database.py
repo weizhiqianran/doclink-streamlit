@@ -4,12 +4,15 @@ from pathlib import Path
 import psycopg2
 import logging
 import numpy as np
+import uuid
 from datetime import datetime
 
 from .config import GenerateConfig
+from ..api.core import Encryptor
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+encryptor = Encryptor()
 
 
 class Database:
@@ -246,31 +249,17 @@ class Database:
         using the file_id already present in default_content
         """
         current_date = datetime.now().date()
-
-        # First, get the file_id from default_content
-        query_get_file_id = """
-        SELECT DISTINCT file_id FROM default_content
-        LIMIT 1
-        """
+        file_id = str(uuid.uuid4())
 
         try:
-            # Get the file_id from default_content
-            self.cursor.execute(query_get_file_id)
-            result = self.cursor.fetchone()
-
-            if not result or not result[0]:
-                logger.error("No file_id found in default_content")
-                raise ValueError("No file_id found in default_content")
-
-            file_id = result[0]
-
-            # Insert file info with the existing file_id
+            # Insert file info with the new file_id
             query_insert_file_info = """
             INSERT INTO file_info 
                 (user_id, domain_id, file_id, file_name, file_modified_date, file_upload_date)
             VALUES 
                 (%s, %s, %s, %s, %s, %s)
             """
+
             self.cursor.execute(
                 query_insert_file_info,
                 (
@@ -283,20 +272,28 @@ class Database:
                 ),
             )
 
-            # Copy content from default_content to file_content using the same file_id
-            query_insert_file_content = """
-            INSERT INTO file_content 
-                (file_id, sentence, is_header, is_table, page_number, embedding)
-            SELECT 
-                file_id,
-                sentence,
-                is_header,
-                is_table,
-                page_number,
-                embedding
+            query_get_guide_content = """
+            SELECT sentence, is_header, is_table, page_number, embedding
             FROM default_content
             """
-            self.cursor.execute(query_insert_file_content)
+            self.cursor.execute(query_get_guide_content)
+            default_content = self.cursor.fetchall()
+
+            for row in default_content:
+                sentence, is_header, is_table, page_number, embedding = row
+                encrypted_sentence = encryptor.encrypt(sentence, file_id)
+
+                self.cursor.execute(
+                    "INSERT INTO file_content (file_id, sentence, is_header, is_table, page_number, embedding) VALUES (%s, %s, %s, %s, %s, %s)",
+                    (
+                        file_id,
+                        encrypted_sentence,
+                        is_header,
+                        is_table,
+                        page_number,
+                        embedding,
+                    ),
+                )
 
             return True
 
