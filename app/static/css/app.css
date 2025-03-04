@@ -3235,19 +3235,56 @@ textarea.form-control {
 
 @media (max-width: 1600px) {
   .resources-container {
-    width: 400px;
+    width: 350px; /* More aggressive reduction */
   }
 
-  .search-input {
-    width: 100%;
+  /* Expand the chat container to use the available space */
+  .chat-container {
+    width: calc(100% - 294px - 350px); /* sidebar width + resources width */
   }
 
-  .message-input-container {
-    width: 100%;
+  .chat-container.sidebar-closed {
+    width: calc(100% - 350px);
+    margin-left: 0;
   }
 
+  /* Adjust message container to match new widths */
+  .message-container {
+    width: calc(100% - 350px - 294px);
+    left: 294px;
+  }
+  
+  .sidebar-closed ~ .chat-container .message-container {
+    width: calc(100% - 350px);
+    left: 0;
+  }
+
+  /* Make sure the chat content area is maximized */
+  .chat-content {
+    max-width: 100%;
+    padding: 20px; /* Slightly reduced padding */
+  }
+
+  /* Ensure message bubbles adapt to container width */
+  .message-bubble {
+    max-width: 95%;
+  }
+
+  /* Adjust the document details for smaller resource panel */
   .document-name {
-    max-width: 250px;
+    max-width: 220px; /* Further reduce max width */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  /* Compact the resource items slightly */
+  .resource-item {
+    gap: 8px; /* Reduced from larger gap */
+  }
+  
+  .content-wrapper {
+    gap: 12px; /* Reduced from larger gap */
   }
 }
 

@@ -1604,7 +1604,7 @@ class ChatManager extends Component {
                             <h5 class="alert-title">Daily Limit Reached</h5>
                             <p class="alert-message">${response.message}</p>
                             <div class="usage-count mt-3">
-                                <small>Questions Used Today: 10/10</small>
+                                <small>Questions Used Today: 25/25</small>
                             </div>
                             <button class="alert-button">Got it</button>
                         </div>
@@ -2123,7 +2123,7 @@ class Sidebar extends Component {
                         <div class="user-menu">
                             <div class="menu-item">
                                 <i class="bi bi-person-circle"></i>
-                                Profile
+                                Usage Limits
                             </div>
                             <div class="menu-divider"></div>
                             <div class="menu-item logout-item">
@@ -3234,7 +3234,7 @@ class ProfileLimitsModal extends Component {
         if (userType === 'free') {
             this.updateProgressBar('sources', totalSources, 10);
             this.updateProgressBar('domains', domains.length, 3);
-            this.updateProgressBar('questions', this.dailyQuestionsCount, 10);
+            this.updateProgressBar('questions', this.dailyQuestionsCount, 25);
         } else if (userType === 'premium') {
             this.updateProgressBar('sources', totalSources, 100);
             this.updateProgressBar('domains', domains.length, 20);
@@ -3245,7 +3245,7 @@ class ProfileLimitsModal extends Component {
     updateDailyCount(count) {
         this.dailyQuestionsCount = count;
         if (this.element.classList.contains('show')) {
-            this.updateProgressBar('questions', count, 10);
+            this.updateProgressBar('questions', count, 25);
         }
     }
 
