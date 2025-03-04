@@ -1,5 +1,5 @@
 # 🔗 Doclink.io
-Doclink is an AI document assistant that transforms how you interact with your documents. Upload your files, create custom folders, and ask questions to quickly retrieve relevant information across your entire document collection. Doclinky connects related information between documents, making complex data analysis simple and intuitive.
+Doclink is an AI document assistant that transforms how you interact with your documents. Upload your files, create custom folders, and ask questions to quickly retrieve relevant information across your entire document collection. Doclink connects related information between documents, making complex data analysis simple and intuitive.
 We're on the early stage. And want to help everyone on their information processing. Thus, you can use doclink completely for free plus all of our implementation is open source.
 
 ## ✨ Features
