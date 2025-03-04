@@ -458,18 +458,33 @@ class Database:
             raise e
 
     def get_user_total_file_count(self, user_id: str):
-        query = """
-        SELECT COUNT(f.file_id), u.user_type
-        FROM file_info f
-        JOIN user_info u ON f.user_id = u.user_id
-        WHERE f.user_id = %s
-        GROUP BY u.user_type
+        user_type_query = """
+        SELECT user_type
+        FROM user_info
+        WHERE user_id = %s
         """
-        try:
-            self.cursor.execute(query, (user_id,))
-            result = self.cursor.fetchall()
 
-            file_count, user_type = result[0][0], result[0][1]
+        file_count_query = """
+        SELECT COUNT(file_id)
+        FROM file_info
+        WHERE user_id = %s
+        """
+
+        try:
+            # Get user type first
+            self.cursor.execute(user_type_query, (user_id,))
+            user_type_result = self.cursor.fetchone()
+
+            if not user_type_result:
+                logger.error(f"User {user_id} not found in database")
+                return False
+
+            user_type = user_type_result[0]
+
+            # Get file count
+            self.cursor.execute(file_count_query, (user_id,))
+            file_count_result = self.cursor.fetchone()
+            file_count = file_count_result[0] if file_count_result else 0
 
             return file_count, user_type
         except Exception as e:
