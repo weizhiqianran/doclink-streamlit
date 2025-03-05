@@ -3617,7 +3617,7 @@ class App {
 
     // Initial Checkout
     initiateCheckout() {
-        const checkoutUrl = 'https://doclinkio.lemonsqueezy.com/buy/68bb1cb7-529b-496a-9075-d03abdc91006';
+        const checkoutUrl = 'https://doclinkio.lemonsqueezy.com/buy/0c0294bb-1cbe-4411-a9bc-800053d1580c';
         window.location.href = checkoutUrl;
     }
 }
@@ -3629,12 +3629,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const resourcesTrigger = document.querySelector('.resources-trigger');
     const resourcesContainer = document.querySelector('.resources-container');
-    const mainContent = document.querySelector('.chat-container'); // Ana içerik
+    const mainContent = document.querySelector('.chat-container');
 
     if (resourcesTrigger && resourcesContainer) {
         resourcesTrigger.addEventListener('click', () => {
             resourcesContainer.classList.toggle('show');
-            mainContent.classList.toggle('blur-content'); // Blur sınıfını ekle/kaldır
+            mainContent.classList.toggle('blur-content');
 
             if (resourcesContainer.classList.contains('show')) {
                 backdrop.classList.add('show');
@@ -3649,7 +3649,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && resourcesContainer.classList.contains('show')) {
                 resourcesContainer.classList.remove('show');
-                mainContent.classList.remove('blur-content'); // Blur'u kaldır
+                mainContent.classList.remove('blur-content');
                 backdrop.classList.remove('show');
                 document.body.style.overflow = '';
             }
