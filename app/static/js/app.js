@@ -3596,7 +3596,7 @@ class App {
 
         // Welcome operations
         const isFirstTime = window.serverData.isFirstTime === 'True';
-        if (isFirstTime) {
+        if (1 === 1) {
             localStorage.setItem('firstTime', 0);
             const firstTimeMsg = `[header]Welcome to Doclink${this.userData.user_info.user_name ? `, ${this.userData.user_info.user_name}` : ''}👋[/header]\nYour first folder with helpful guide settled up. You can always use this file to get information about Doclink!\n[header]To get started[/header]\n- Select your folder on navigation bar \n- Upload your documents or insert a link\n- Ask any question to get information\n- All answers will include sources on references\n\n[header]Quick Tips[/header]\n- Doclink is specialized to answer only from your files\n- Specialized questions can help Doclink to find information better\n- Doclink supports PDF, DOCX, Excel, PowerPoint, UDF and TXT file formats\n- You can create different folders for different topics and interact with them\n- You can also ask just selected files to get isolated information\n- You can select answers on the upper right of the message box and create report with clicking report icon on the chat`;
             this.chatManager.addMessage(firstTimeMsg, 'ai');
