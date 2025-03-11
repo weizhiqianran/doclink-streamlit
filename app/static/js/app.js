@@ -2270,7 +2270,7 @@ class Sidebar extends Component {
         const chatContainer = document.querySelector('.chat-container');
         if (chatContainer) {
           chatContainer.classList.toggle('sidebar-closed', !this.isOpen);
-        
+
         // Toggle chat container margin
         const messageContainer = document.querySelector('.message-container');
         if (messageContainer) {
@@ -3666,15 +3666,12 @@ document.addEventListener('DOMContentLoaded', () => {
             mainContent.classList.toggle('blur-content');
 
             if (resourcesContainer.classList.contains('show')) {
-                backdrop.classList.add('show');
                 document.body.style.overflow = 'hidden';
             } else {
-                backdrop.classList.remove('show');
                 document.body.style.overflow = '';
             }
         });
 
-        // Escape tuşu ile kapatma
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && resourcesContainer.classList.contains('show')) {
                 resourcesContainer.classList.remove('show');

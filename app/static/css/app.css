@@ -3394,88 +3394,131 @@ textarea.form-control {
 }
 }
 
-@media (max-width: 991px) {
-  .sidebar-container.open .menu-trigger .bi-list {
-    transform: rotate(45deg);
-  }
-}
 
 @media (max-width: 768px) {
-  .resources-trigger {
-    display: block; /* Sadece bu aralıkta görünür */
+/* Sidebar positioning for mobile - hide off-screen by default */
+.sidebar-container {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 294px !important;
+  height: 100% !important;
+  z-index: 1050 !important;
+  transform: translateX(-100%) !important;
+  transition: transform 0.3s ease !important;
 }
 
+/* Use !important to override any competing styles */
+.sidebar-container.open {
+  transform: translateX(0) !important;
+}
+
+/* Make resources trigger visible */
+.resources-trigger {
+  display: block !important;
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: var(--primary-dark);
+  font-size: 24px;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  z-index: 1051;
+}
+
+/* Resources container positioning */
 .resources-container {
-  position: fixed;
-  top: 0;
-  right: -610px;
-  width: 80%;
-  height: 100%;
-  transition: transform 0.3s ease;
-  z-index: 1050;
+  position: fixed !important;
+  top: 0 !important;
+  right: 0 !important;
+  width: 80% !important;
+  height: 100% !important;
+  z-index: 1050 !important;
+  transform: translateX(100%) !important;
+  transition: transform 0.3s ease !important;
 }
 
+/* Resources container when shown */
 .resources-container.show {
-    transform: translateX(-600px);
-    border-left: rgba(255, 255, 255, 0.1) 1px solid;
+  transform: translateX(0) !important;
 }
-  .section-divider {
+
+/* Hide section divider */
+.section-divider {
     display: none;
-  }
+}
 
-  .chat-container {
-    width: 100%;
-  }
+/* Full width chat container */
+.chat-container {
+    width: 100% !important;
+    margin-left: 0 !important;
+}
 
-  #fileUploadModal .modal-dialog {
+/* Message container takes full width */
+.message-container {
+    width: 100% !important;
+    left: 0 !important;
+}
+
+/* File upload modal adjustments */
+#fileUploadModal .modal-dialog {
     min-height: calc(100vh - 60px);
-    /* Account for potential padding */
     display: flex;
     align-items: center;
     margin: auto;
-  }
+}
 
-  #fileUploadModal .modal-content {
+#fileUploadModal .modal-content {
     max-height: 90vh;
     width: 90vw;
     margin: auto;
-  }
+}
 
-  .file-list-container {
+/* Adjust file list container height */
+.file-list-container {
     max-height: calc(100vh - 445px);
-  }
+}
 
-  .resource-content {
+/* Resource content padding */
+.resource-content {
     padding: 16px;
-  }
+}
 
-  .source-info {
+/* Source info layout */
+.source-info {
     flex-direction: column;
     align-items: flex-start;
     gap: 8px;
-  }
+}
 
-  .bullet-line {
+/* Bullet line height for resources */
+.bullet-line {
     height: calc(100% + 64px);
-  }
+}
 
-  .document-name {
+/* Document name full width on mobile */
+.document-name {
     max-width: 100%;
-    /* Full width on mobile since it's stacked */
-  }
+}
 
-  .feedback-modal-content {
+/* Feedback modal adjustments */
+.feedback-modal-content {
     padding: 24px;
     width: 95%;
-  }
+}
 
-  .form-group {
+.form-group {
     margin-bottom: 16px;
-  }
+}
 
-  .form-control {
+.form-control {
     padding: 10px;
-  }
+}
 }
 
 @media (max-width: 510px) {
