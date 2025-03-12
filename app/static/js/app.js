@@ -1436,6 +1436,7 @@ class FileUploadModal extends Component {
             txt: 'bi-file-text',
             pptx: 'bi-file-ppt',
             xlsx: 'bi-file-excel',
+            csv: 'bi-file-excel',
             udf: 'bi-file-post',
             html: 'bi-file-code',
         };
@@ -2512,6 +2513,7 @@ class Sidebar extends Component {
             txt: 'bi-file-text',
             pptx: 'bi-file-ppt',
             xlsx: 'bi-file-excel',
+            csv: 'bi-file-excel',
             udf: 'bi-file-post',
             html: 'bi-file-earmark-code',
         };

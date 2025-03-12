@@ -7,7 +7,10 @@ import pymupdf4llm
 import xml.etree.ElementTree as ET
 import zipfile
 from pathlib import Path
-from langchain_text_splitters import MarkdownHeaderTextSplitter
+from langchain_text_splitters import (
+    MarkdownHeaderTextSplitter,
+    RecursiveCharacterTextSplitter,
+)
 from docling.datamodel.base_models import InputFormat
 from docling.pipeline.simple_pipeline import SimplePipeline
 from docling.document_converter import (
@@ -16,10 +19,14 @@ from docling.document_converter import (
     PowerpointFormatOption,
     HTMLFormatOption,
 )
+from mistralai import Mistral
+from dotenv import load_dotenv
 
 
 class ReadingFunctions:
     def __init__(self):
+        load_dotenv()
+        self.client = Mistral()
         self.nlp = spacy.load(
             "en_core_web_sm",
             disable=[
@@ -41,11 +48,13 @@ class ReadingFunctions:
         self.markdown_splitter = MarkdownHeaderTextSplitter(
             self.headers_to_split_on, strip_headers=False, return_each_line=True
         )
+        self.csv_splitter = RecursiveCharacterTextSplitter(separators=["\n\n", "\n"])
         self.converter = DocumentConverter(
             allowed_formats=[
                 InputFormat.DOCX,
                 InputFormat.PPTX,
                 InputFormat.XLSX,
+                InputFormat.CSV,
                 InputFormat.PDF,
                 InputFormat.HTML,
             ],
@@ -73,6 +82,8 @@ class ReadingFunctions:
                 return self._process_pptx(file_bytes=file_bytes)
             elif file_type == "xlsx":
                 return self._process_xlsx(file_bytes=file_bytes)
+            elif file_type == "csv":
+                return self._process_csv(file_bytes=file_bytes)
             elif file_type == "udf":
                 return self._process_udf(file_bytes=file_bytes)
             elif file_type in ["txt", "rtf"]:
@@ -389,6 +400,71 @@ class ReadingFunctions:
                     xlsx_data["page_number"].append(current_page)
                     current_length += len(split.page_content)
         return xlsx_data
+
+    def _process_csv(self, file_bytes: bytes):
+        csv_data = {
+            "sentences": [],
+            "page_number": [],
+            "is_header": [],
+            "is_table": [],
+        }
+        current_length = 0
+        chars_per_page = 5000
+        current_page = 1
+        csv_file = io.BytesIO(file_bytes)
+        with tempfile.NamedTemporaryFile(delete=True, suffix=".csv") as temp_file:
+            temp_file.write(csv_file.getvalue())
+            csv_path = Path(temp_file.name)
+            md_text = self.converter.convert(csv_path).document.export_to_markdown()
+            splits = self.csv_splitter.split_text(md_text)
+            for split in splits:
+                if current_length + len(split) > chars_per_page:
+                    current_page += 1
+                    current_length = 0
+                if (
+                    not len(split) > 5
+                    or re.match(r"^[^\w]*$", split)
+                    or split[:4] == "<!--"
+                ):
+                    continue
+                elif split[0] == "#":  # Header detection
+                    csv_data["sentences"].append(split)
+                    csv_data["is_header"].append(True)
+                    csv_data["is_table"].append(False)
+                    csv_data["page_number"].append(current_page)
+                    current_length += len(split)
+                elif (
+                    split[0] == "*"
+                    and split[-1] == "*"
+                    and (
+                        re.match(
+                            r"(\*{2,})(\d+(?:\.\d+)*)\s*(\*{2,})?(.*)$",
+                            split,
+                        )
+                        or re.match(
+                            r"(\*{1,3})?([A-Z][a-zA-Z\s\-]+)(\*{1,3})?$",
+                            split,
+                        )
+                    )
+                ):  # Sub-Header and Header variant detection
+                    csv_data["sentences"].append(split)
+                    csv_data["is_header"].append(True)
+                    csv_data["is_table"].append(False)
+                    csv_data["page_number"].append(current_page)
+                    current_length += len(split)
+                elif split[0] == "|" and split[-1] == "|":  # Table detection
+                    csv_data["sentences"].append(split)
+                    csv_data["is_header"].append(False)
+                    csv_data["is_table"].append(True)
+                    csv_data["page_number"].append(current_page)
+                    current_length += len(split)
+                else:
+                    csv_data["sentences"].append(split)
+                    csv_data["is_header"].append(False)
+                    csv_data["is_table"].append(False)
+                    csv_data["page_number"].append(current_page)
+                    current_length += len(split)
+        return csv_data
 
     def _process_udf(self, file_bytes: bytes):
         udf_data = {
