@@ -3418,8 +3418,8 @@ textarea.form-control {
   display: block !important;
   position: absolute;
   right: 20px;
-  top: 50%;
-  transform: translateY(-50%);
+  top: 10px;
+  transform: none;
   background: transparent;
   border: none;
   color: var(--primary-dark);
