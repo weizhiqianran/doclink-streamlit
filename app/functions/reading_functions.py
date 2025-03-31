@@ -19,14 +19,20 @@ from docling.document_converter import (
     PowerpointFormatOption,
     HTMLFormatOption,
 )
-from mistralai import Mistral
+
+# from mistralai import Mistral
+from openai import OpenAI
+
 from dotenv import load_dotenv
 
 
 class ReadingFunctions:
     def __init__(self):
         load_dotenv()
-        self.client = Mistral()
+        
+        # self.client = Mistral()
+        self.client = OpenAI()
+
         self.nlp = spacy.load(
             "en_core_web_sm",
             disable=[

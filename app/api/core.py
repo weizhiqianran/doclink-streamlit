@@ -122,7 +122,7 @@ class Processor:
                 return (
                     "Sorunu anlayamadım",
                     None,
-                    None,
+                    None,1
                 )
             else:
                 return (

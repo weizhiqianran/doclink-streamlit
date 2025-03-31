@@ -1,0 +1,1 @@
+INFO:app.redis_manager:Redis connection established
